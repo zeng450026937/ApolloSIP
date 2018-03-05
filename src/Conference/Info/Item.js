@@ -16,7 +16,7 @@ module.exports = class Item
 
   update(obj, force = false)
   {
-    obj = obj || {};
+    if (!obj) { return; }
 
     if (force)
     {

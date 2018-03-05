@@ -16,23 +16,21 @@ module.exports = class Information extends EventEmitter
 
     this._conference = conference;
 
-    this._entity = conference.entity;
     this._version = 0;
     this._time = undefined;
     this._description = new Description(this);
     this._state = new State(this);
     this._view = new View(this);
     this._users = new Users(this);
-
-    this._conference.on('entityChanged', (entity) => 
-    {
-      this._entity = entity;
-    });
   }
 
+  get from()
+  {
+    return this._conference.from;
+  }
   get entity()
   {
-    return this._entity;
+    return this._conference.entity;
   }
   get version()
   {
@@ -96,6 +94,27 @@ module.exports = class Information extends EventEmitter
     this._deletedUpdate();
   }
 
+  isShareAvariable()
+  {
+    let sharePermission = false;
+
+    const profile = this.description.profile;
+    const user = this.users.getUser(this._conference.from);
+
+    switch (profile) 
+    {
+      case 'default':
+        sharePermission = user.roles.permission === 'presenter'?true:false;
+        break;
+      case 'demonstrator':
+        sharePermission = user.roles.demostate === 'demonstrator'?true:
+          user.roles.permission === 'attendee'?false:true;
+        break;
+    }
+
+    return sharePermission;
+  }
+
   _fullUpdate(info)
   {
     this._time = info['now-time'];
@@ -109,6 +128,8 @@ module.exports = class Information extends EventEmitter
   }
   _particalUpdate(info)
   {
+    const participantCount = this.users.participantCount;
+
     this._time = info['now-time'];
 
     this._description.update(info['conference-description']);
@@ -117,6 +138,21 @@ module.exports = class Information extends EventEmitter
     this._users.update(info['users']);
 
     this._checkUpdate(info);
+
+    const participantCountDiff = this.users.participantCount - participantCount;
+
+    if (participantCountDiff > 0)
+    {
+      this._conference._userAdded(this.users.updatedUser);
+    }
+    else if (participantCountDiff === 0)
+    {
+      this._conference._userUpdated(this.users.updatedUser);
+    }
+    else
+    {
+      this._conference._userDeleted(this.users.updatedUser);
+    }
   }
   _deletedUpdate()
   {

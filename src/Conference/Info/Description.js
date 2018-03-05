@@ -2,11 +2,9 @@ const Item = require('./Item');
 
 module.exports = class Description extends Item
 {
-  constructor(information)
+  constructor()
   {
     super();
-
-    this._information = information;
   }
 
   get admissionPolicy()

@@ -748,6 +748,7 @@ module.exports = class Conference extends EventEmitter
   onNotify(data)
   {
     this.information.update(data.notify);
+    this.emit('informationUpdated', this.information);
   }
 
   _descriptionUpdated()
@@ -789,6 +790,19 @@ module.exports = class Conference extends EventEmitter
   _usersUpdated()
   {
     this.emit('usersUpdated', this.users);
+  }
+  
+  _userUpdated(user)
+  {
+    this.emit('userUpdated', user);
+  }
+  _userAdded(user)
+  {
+    this.emit('userAdded', user);
+  }
+  _userDeleted(user)
+  {
+    this.emit('userDeleted', user);
   }
 
   _redirect(target)

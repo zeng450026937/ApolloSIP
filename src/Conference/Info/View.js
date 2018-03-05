@@ -3,11 +3,9 @@ const Utils = require('../../Base/Utils');
 
 module.exports = class View extends Item
 {
-  constructor(information)
+  constructor()
   {
     super();
-
-    this._information = information;
   }
 
   get entityViewList()
