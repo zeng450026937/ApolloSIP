@@ -1,0 +1,48 @@
+{
+  "name": "apollo",
+  "title": "Apollo",
+  "description": "The Javascript SIP library",
+  "version": "1.0.0",
+  "homepage": "http://www.yealink.com.cn/",
+  "author": "Yealink Inc.",
+  "contributors": [
+    "ito"
+  ],
+  "main": "dist/apollo.js",
+  "keywords": [
+    "sip",
+    "websocket",
+    "webrtc",
+    "node",
+    "browser",
+    "library",
+    "javascript"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "dependencies": {
+    "bowser": "^1.9.1",
+    "debug": "^3.1.0",
+    "sdp-transform": "file:./sdp-transform",
+    "webrtc-adapter": "^6.0.4",
+    "xmlbuilder": "^9.0.4",
+    "fast-xml-parser": "^2.9.0",
+    "fecha": "^2.3.2"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
+    "eslint": "^4.15.0",
+    "pegjs": "^0.10.0",
+    "pegjs-loader": "^0.5.4",
+    "uglifyjs-webpack-plugin": "^1.1.6",
+    "webpack": "^3.10.0"
+  },
+  "scripts": {
+    "build": "webpack --progress"
+  }
+}
