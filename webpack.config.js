@@ -8,13 +8,13 @@ Copyright (c) 2018-${year} Yealink Networks, Inc\n\n`;
 
 module.exports = {
   entry : {
-    'apollo'     : `${__dirname }/exp/apollo.js`,
-    'apollo.min' : `${__dirname }/exp/apollo.js`
+    'apollosip'     : `${__dirname }/src/ApolloSip.js`,
+    'apollosip.min' : `${__dirname }/src/ApolloSip.js`
   },
   output : {
     path          : `${__dirname }/dist`,
     filename      : '[name].js',
-    library       : 'Apollo',
+    library       : 'ApolloSip',
     libraryTarget : 'umd'
   },
   module : {

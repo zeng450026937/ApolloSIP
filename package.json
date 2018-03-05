@@ -8,7 +8,7 @@
   "contributors": [
     "ito"
   ],
-  "main": "dist/apollo.js",
+  "main": "dist/apollosip.js",
   "keywords": [
     "sip",
     "websocket",
