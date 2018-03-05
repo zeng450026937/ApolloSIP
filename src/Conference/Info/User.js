@@ -77,4 +77,15 @@ module.exports = class User extends Item
     return list;
   }
 
+  // main-audio | main=video | applicationsharing
+  getMedia(label)
+  {
+    const media = this.mediaList.find(function(m)
+    {
+      return m['label'] === label;
+    });
+
+    return media;
+  }
+
 };

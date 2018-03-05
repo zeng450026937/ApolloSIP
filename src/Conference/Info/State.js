@@ -2,9 +2,11 @@ const Item = require('./Item');
 
 module.exports = class State extends Item
 {
-  constructor()
+  constructor(information)
   {
     super();
+
+    this._information = information;
   }
 
   get active()

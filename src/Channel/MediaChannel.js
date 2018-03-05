@@ -309,6 +309,22 @@ module.exports = class MediaChannel extends Channel
     }
   }
 
+  addLocalMedia(stream)
+  {
+    const pc = this.session.connection;
+
+    if (!pc) return;
+
+    if (pc.addStream)
+    {
+      pc.addStream(stream);
+    }
+    else
+    {
+      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+    }
+  }
+
   removeLocalMedia()
   {
     const pc = this.session.connection;
@@ -522,6 +538,7 @@ module.exports = class MediaChannel extends Channel
     if (data.originator === 'local')
     {
       this._local_sdp = sdp;
+      this._local_ssrcs = [];
 
       for (const m of sdp.media)
       {
@@ -547,9 +564,15 @@ module.exports = class MediaChannel extends Channel
     if (data.originator === 'remote')
     {
       this._remote_sdp = sdp;
+      this._remote_ssrcs = [];
 
       for (const m of sdp.media)
       {
+        if (!m.ssrcs)
+        {
+          continue;
+        }
+
         filter = m.ssrcs.filter((value) =>
         {
           return value.attribute === 'cname';

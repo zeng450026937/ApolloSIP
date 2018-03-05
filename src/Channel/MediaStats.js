@@ -50,14 +50,15 @@ class StreamStats
     self.recentTotal += sample[1];
     self.samples.push(sample);
 
-    if (self.recentTotal === 0) 
+    if (self.recentTotal === 0 ||
+        self.recentLost < 0 ||
+        self.recentLost > self.recentTotal) 
     {
       self.info['packetsLostRate'] = null;
     }
     else 
     {
-      // self.info['packetsLostRate'] = (self.recentLost / self.recentTotal * 100).toFixed(0);
-      self.info['packetsLostRate'] = ((1-(self.recentTotal/(self.recentTotal+self.recentLost)))*100).toFixed(0);
+      self.info['packetsLostRate'] = (self.recentLost / self.recentTotal * 100).toFixed(0);
     }
   }
 
@@ -80,7 +81,7 @@ class StreamStats
     {
       const kbps = Math.round((result.stat('bytesReceived') - self.lastBytes) * 8 / (result.timestamp - self.lastTimestamp));
 
-      self.info['availableBandWidth'] = kbps;
+      self.info['availableBandWidth'] = kbps > 0 ? kbps : null;
     }
 
     if (result.stat('googFrameHeightReceived'))
@@ -126,7 +127,7 @@ class StreamStats
     {
       const kbps = Math.round((result.stat('bytesSent') - self.lastBytes) * 8 / (result.timestamp - self.lastTimestamp));
 
-      self.info['availableBandWidth'] = kbps;
+      self.info['availableBandWidth'] = kbps > 0 ? kbps : null;
     }
 
     if (result.stat('googFrameHeightSent'))
@@ -170,7 +171,7 @@ class StreamStats
         (result.timestamp - self.lastTimestamp)
       );
 
-      self.info['availableBandWidth'] = kbps;
+      self.info['availableBandWidth'] = kbps > 0 ? kbps : null;
     }
 
     if (result.jitter)
@@ -200,7 +201,7 @@ class StreamStats
         (result.timestamp - self.lastTimestamp)
       );
 
-      self.info['availableBandWidth'] = kbps;
+      self.info['availableBandWidth'] = kbps > 0 ? kbps : null;
     }
 
     self.info['jitterBufferMs'] = '0';

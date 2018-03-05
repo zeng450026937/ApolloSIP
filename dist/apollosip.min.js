@@ -23605,6 +23605,21 @@ module.exports = function (_Channel) {
       }
     }
   }, {
+    key: 'addLocalMedia',
+    value: function addLocalMedia(stream) {
+      var pc = this.session.connection;
+
+      if (!pc) return;
+
+      if (pc.addStream) {
+        pc.addStream(stream);
+      } else {
+        stream.getTracks().forEach(function (track) {
+          return pc.addTrack(track, stream);
+        });
+      }
+    }
+  }, {
     key: 'removeLocalMedia',
     value: function removeLocalMedia() {
       var pc = this.session.connection;
@@ -23785,6 +23800,7 @@ module.exports = function (_Channel) {
 
       if (data.originator === 'local') {
         this._local_sdp = sdp;
+        this._local_ssrcs = [];
 
         var _iteratorNormalCompletion = true;
         var _didIteratorError = false;
@@ -23826,6 +23842,7 @@ module.exports = function (_Channel) {
 
       if (data.originator === 'remote') {
         this._remote_sdp = sdp;
+        this._remote_ssrcs = [];
 
         var _iteratorNormalCompletion2 = true;
         var _didIteratorError2 = false;
@@ -23834,6 +23851,10 @@ module.exports = function (_Channel) {
         try {
           for (var _iterator2 = sdp.media[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
             var _m = _step2.value;
+
+            if (!_m.ssrcs) {
+              continue;
+            }
 
             filter = _m.ssrcs.filter(function (value) {
               return value.attribute === 'cname';
@@ -25335,7 +25356,7 @@ module.exports = function (_EventEmitter) {
 
       this.information.clear();
 
-      this.emit('disconnected');
+      this.emit('disconnected', data.cause);
     }
   }, {
     key: 'onFailed',
@@ -40499,11 +40520,10 @@ var StreamStats = function () {
       self.recentTotal += sample[1];
       self.samples.push(sample);
 
-      if (self.recentTotal === 0) {
+      if (self.recentTotal === 0 || self.recentLost < 0 || self.recentLost > self.recentTotal) {
         self.info['packetsLostRate'] = null;
       } else {
-        // self.info['packetsLostRate'] = (self.recentLost / self.recentTotal * 100).toFixed(0);
-        self.info['packetsLostRate'] = ((1 - self.recentTotal / (self.recentTotal + self.recentLost)) * 100).toFixed(0);
+        self.info['packetsLostRate'] = (self.recentLost / self.recentTotal * 100).toFixed(0);
       }
     }
   }, {
@@ -40525,7 +40545,7 @@ var StreamStats = function () {
       if (self.lastTimestamp > 0) {
         var kbps = Math.round((result.stat('bytesReceived') - self.lastBytes) * 8 / (result.timestamp - self.lastTimestamp));
 
-        self.info['availableBandWidth'] = kbps;
+        self.info['availableBandWidth'] = kbps > 0 ? kbps : null;
       }
 
       if (result.stat('googFrameHeightReceived')) self.info['resolution'] = {
@@ -40565,7 +40585,7 @@ var StreamStats = function () {
       if (self.lastTimestamp > 0) {
         var kbps = Math.round((result.stat('bytesSent') - self.lastBytes) * 8 / (result.timestamp - self.lastTimestamp));
 
-        self.info['availableBandWidth'] = kbps;
+        self.info['availableBandWidth'] = kbps > 0 ? kbps : null;
       }
 
       if (result.stat('googFrameHeightSent')) self.info['resolution'] = {
@@ -40602,7 +40622,7 @@ var StreamStats = function () {
       if (self.lastTimestamp > 0) {
         var kbps = Math.round((result.bytesReceived - self.lastBytes) * 8 / (result.timestamp - self.lastTimestamp));
 
-        self.info['availableBandWidth'] = kbps;
+        self.info['availableBandWidth'] = kbps > 0 ? kbps : null;
       }
 
       if (result.jitter) self.info['jitterBufferMs'] = result.jitter.toFixed(1);
@@ -40626,7 +40646,7 @@ var StreamStats = function () {
       if (self.lastTimestamp > 0) {
         var kbps = Math.round((result.bytesSent - self.lastBytes) * 8 / (result.timestamp - self.lastTimestamp));
 
-        self.info['availableBandWidth'] = kbps;
+        self.info['availableBandWidth'] = kbps > 0 ? kbps : null;
       }
 
       self.info['jitterBufferMs'] = '0';
@@ -41087,10 +41107,13 @@ var Item = __webpack_require__(16);
 module.exports = function (_Item) {
   _inherits(Description, _Item);
 
-  function Description() {
+  function Description(information) {
     _classCallCheck(this, Description);
 
-    return _possibleConstructorReturn(this, (Description.__proto__ || Object.getPrototypeOf(Description)).call(this));
+    var _this = _possibleConstructorReturn(this, (Description.__proto__ || Object.getPrototypeOf(Description)).call(this));
+
+    _this._information = information;
+    return _this;
   }
 
   _createClass(Description, [{
@@ -41203,10 +41226,13 @@ var Item = __webpack_require__(16);
 module.exports = function (_Item) {
   _inherits(State, _Item);
 
-  function State() {
+  function State(information) {
     _classCallCheck(this, State);
 
-    return _possibleConstructorReturn(this, (State.__proto__ || Object.getPrototypeOf(State)).call(this));
+    var _this = _possibleConstructorReturn(this, (State.__proto__ || Object.getPrototypeOf(State)).call(this));
+
+    _this._information = information;
+    return _this;
   }
 
   _createClass(State, [{
@@ -41245,10 +41271,13 @@ var Utils = __webpack_require__(4);
 module.exports = function (_Item) {
   _inherits(View, _Item);
 
-  function View() {
+  function View(information) {
     _classCallCheck(this, View);
 
-    return _possibleConstructorReturn(this, (View.__proto__ || Object.getPrototypeOf(View)).call(this));
+    var _this = _possibleConstructorReturn(this, (View.__proto__ || Object.getPrototypeOf(View)).call(this));
+
+    _this._information = information;
+    return _this;
   }
 
   _createClass(View, [{
@@ -41294,11 +41323,12 @@ var User = __webpack_require__(111);
 module.exports = function (_Item) {
   _inherits(Users, _Item);
 
-  function Users() {
+  function Users(information) {
     _classCallCheck(this, Users);
 
     var _this = _possibleConstructorReturn(this, (Users.__proto__ || Object.getPrototypeOf(Users)).call(this));
 
+    _this._information = information;
     _this._userList = [];
     _this._updatedUser = {};
     return _this;
@@ -41323,10 +41353,10 @@ module.exports = function (_Item) {
       var entity = undefined;
       var updatingUser = undefined;
 
-      var user = obj['user'];
+      var userObj = obj['user'];
 
-      if ((typeof user === 'undefined' ? 'undefined' : _typeof(user)) === 'object') {
-        entity = user['@entity'];
+      if ((typeof userObj === 'undefined' ? 'undefined' : _typeof(userObj)) === 'object') {
+        entity = userObj['@entity'];
       }
 
       updatingUser = this.getUser(entity);
@@ -41336,8 +41366,16 @@ module.exports = function (_Item) {
       var list = Utils.arrayfy(this.get('user'));
 
       this._userList = list.map(function (userInfo) {
-        return new User(userInfo);
-      });
+        var user = new User(userInfo);
+        var currentUserEntity = this._information.from;
+
+        // setup user's attached properties.
+        user.isCurrentUser = function () {
+          return this.entity === currentUserEntity ? true : false;
+        };
+
+        return user;
+      }, this);
 
       this._updatedUser = this.getUser(entity) || updatingUser;
     }
@@ -41355,6 +41393,32 @@ module.exports = function (_Item) {
     key: 'userList',
     get: function get() {
       return this._userList;
+    }
+  }, {
+    key: 'presenter',
+    get: function get() {
+      var presenter = this.userList.find(function (user) {
+        var found = false;
+
+        var shareMedia = user.getMedia('applicationsharing');
+
+        if (shareMedia && shareMedia['status'] === 'sendonly') {
+          found = true;
+        }
+
+        return found;
+      });
+
+      return presenter;
+    }
+  }, {
+    key: 'currentUser',
+    get: function get() {
+      var currentUser = this.userList.find(function (user) {
+        return user.entity === this._information.from;
+      });
+
+      return currentUser;
     }
   }]);
 
@@ -41391,6 +41455,18 @@ module.exports = function (_Item) {
   }
 
   _createClass(User, [{
+    key: 'getMedia',
+
+
+    // main-audio | main=video | applicationsharing
+    value: function getMedia(label) {
+      var media = this.mediaList.find(function (m) {
+        return m['label'] === label;
+      });
+
+      return media;
+    }
+  }, {
     key: 'entity',
     get: function get() {
       return this.get('@entity');

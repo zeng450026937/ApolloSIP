@@ -4,10 +4,11 @@ const User = require('./User');
 
 module.exports = class Users extends Item
 {
-  constructor()
+  constructor(information)
   {
     super();
 
+    this._information = information;
     this._userList = [];
     this._updatedUser = {};
   }
@@ -27,6 +28,32 @@ module.exports = class Users extends Item
     return this._userList;
   }
 
+  get presenter()
+  {
+    const presenter = this.userList.find(function(user) 
+    {
+      let found = false;
+
+      const shareMedia = user.getMedia('applicationsharing');
+
+      if (shareMedia && shareMedia['status'] === 'sendonly') { found = true; }
+
+      return found;
+    });
+
+    return presenter;
+  }
+
+  get currentUser()
+  {
+    const currentUser = this.userList.find(function(user) 
+    {
+      return user.entity === this._information.from;
+    });
+
+    return currentUser;
+  }
+
   getUser(entity)
   {
     return this.userList.find((user) =>
@@ -42,11 +69,11 @@ module.exports = class Users extends Item
     let entity = undefined;
     let updatingUser = undefined;
 
-    const user = obj['user'];
+    const userObj = obj['user'];
 
-    if (typeof user === 'object')
+    if (typeof userObj === 'object')
     {
-      entity = user['@entity'];
+      entity = userObj['@entity'];
     }
 
     updatingUser = this.getUser(entity);
@@ -57,8 +84,17 @@ module.exports = class Users extends Item
 
     this._userList = list.map(function(userInfo)
     {
-      return new User(userInfo);
-    });
+      const user = new User(userInfo);
+      const currentUserEntity = this._information.from;
+
+      // setup user's attached properties.
+      user.isCurrentUser = function() 
+      {
+        return this.entity === currentUserEntity?true:false;
+      };
+
+      return user;
+    }, this);
 
     this._updatedUser = this.getUser(entity) || updatingUser;
   }

@@ -735,7 +735,7 @@ module.exports = class Conference extends EventEmitter
 
     this.information.clear();
 
-    this.emit('disconnected');
+    this.emit('disconnected', data.cause);
   }
 
   onFailed(data)
