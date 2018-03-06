@@ -32,13 +32,7 @@ module.exports = class Users extends Item
   {
     const presenter = this.userList.find(function(user) 
     {
-      let found = false;
-
-      const shareMedia = user.getMedia('applicationsharing');
-
-      if (shareMedia && shareMedia['status'] === 'sendonly') { found = true; }
-
-      return found;
+      return user.isPresenter();
     });
 
     return presenter;
@@ -48,7 +42,7 @@ module.exports = class Users extends Item
   {
     const currentUser = this.userList.find(function(user) 
     {
-      return user.entity === this._information.from;
+      return user.isCurrentUser();
     });
 
     return currentUser;
@@ -90,7 +84,14 @@ module.exports = class Users extends Item
       // setup user's attached properties.
       user.isCurrentUser = function() 
       {
-        return this.entity === currentUserEntity?true:false;
+        return this.entity === currentUserEntity;
+      };
+
+      user.isPresenter = function()
+      {
+        const shareMedia = user.getMedia('applicationsharing');
+
+        return shareMedia && shareMedia['status'] === 'sendonly';
       };
 
       return user;

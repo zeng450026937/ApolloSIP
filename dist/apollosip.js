@@ -23599,8 +23599,10 @@ module.exports = function (_Channel) {
       var stream = this.localStream;
 
       if (elements.video) {
+        elements.video.srcObject = null;
         elements.video.srcObject = stream;
       } else if (elements.audio) {
+        elements.audio.srcObject = null;
         elements.audio.srcObject = stream;
       }
     }
@@ -23685,22 +23687,11 @@ module.exports = function (_Channel) {
       options.mediaConstraints = this.media.constraints;
       options.mediaStream = this.media.stream;
 
-      switch (this.type) {
-        case TYPE.MAIN:
-          options.rtcOfferConstraints.offerToReceiveAudio = this.media.receiveAudio;
-          options.rtcOfferConstraints.offerToReceiveVideo = this.media.receiveVideo;
+      options.rtcOfferConstraints.offerToReceiveAudio = this.media.receiveAudio;
+      options.rtcOfferConstraints.offerToReceiveVideo = this.media.receiveVideo;
 
-          options.rtcAnswerConstraints.offerToReceiveAudio = this.media.receiveAudio;
-          options.rtcAnswerConstraints.offerToReceiveVideo = this.media.receiveAudio;
-          break;
-        case TYPE.SLIDES:
-          options.rtcOfferConstraints.offerToReceiveAudio = 0;
-          options.rtcOfferConstraints.offerToReceiveVideo = 0;
-
-          options.rtcAnswerConstraints.offerToReceiveAudio = 0;
-          options.rtcAnswerConstraints.offerToReceiveVideo = 0;
-          break;
-      }
+      options.rtcAnswerConstraints.offerToReceiveAudio = this.media.receiveAudio;
+      options.rtcAnswerConstraints.offerToReceiveVideo = this.media.receiveAudio;
 
       return options;
     }
@@ -40968,6 +40959,10 @@ module.exports = function (_EventEmitter) {
       var profile = this.description.profile;
       var user = this.users.getUser(this._conference.from);
 
+      if (!user) {
+        return false;
+      }
+
       switch (profile) {
         case 'default':
           sharePermission = user.roles.permission === 'presenter' ? true : false;
@@ -41371,7 +41366,13 @@ module.exports = function (_Item) {
 
         // setup user's attached properties.
         user.isCurrentUser = function () {
-          return this.entity === currentUserEntity ? true : false;
+          return this.entity === currentUserEntity;
+        };
+
+        user.isPresenter = function () {
+          var shareMedia = user.getMedia('applicationsharing');
+
+          return shareMedia && shareMedia['status'] === 'sendonly';
         };
 
         return user;
@@ -41398,15 +41399,7 @@ module.exports = function (_Item) {
     key: 'presenter',
     get: function get() {
       var presenter = this.userList.find(function (user) {
-        var found = false;
-
-        var shareMedia = user.getMedia('applicationsharing');
-
-        if (shareMedia && shareMedia['status'] === 'sendonly') {
-          found = true;
-        }
-
-        return found;
+        return user.isPresenter();
       });
 
       return presenter;
@@ -41415,7 +41408,7 @@ module.exports = function (_Item) {
     key: 'currentUser',
     get: function get() {
       var currentUser = this.userList.find(function (user) {
-        return user.entity === this._information.from;
+        return user.isCurrentUser();
       });
 
       return currentUser;

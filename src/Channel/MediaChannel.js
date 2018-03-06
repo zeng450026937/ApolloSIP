@@ -301,10 +301,12 @@ module.exports = class MediaChannel extends Channel
 
     if (elements.video) 
     {
+      elements.video.srcObject = null;
       elements.video.srcObject = stream;
     }
     else if (elements.audio) 
     {
+      elements.audio.srcObject = null;
       elements.audio.srcObject = stream;
     }
   }
@@ -408,23 +410,11 @@ module.exports = class MediaChannel extends Channel
     options.mediaConstraints = this.media.constraints;
     options.mediaStream = this.media.stream;
 
-    switch (this.type) 
-    {
-      case TYPE.MAIN:
-        options.rtcOfferConstraints.offerToReceiveAudio = this.media.receiveAudio;
-        options.rtcOfferConstraints.offerToReceiveVideo = this.media.receiveVideo;
+    options.rtcOfferConstraints.offerToReceiveAudio = this.media.receiveAudio;
+    options.rtcOfferConstraints.offerToReceiveVideo = this.media.receiveVideo;
 
-        options.rtcAnswerConstraints.offerToReceiveAudio = this.media.receiveAudio;
-        options.rtcAnswerConstraints.offerToReceiveVideo = this.media.receiveAudio;
-        break;
-      case TYPE.SLIDES:
-        options.rtcOfferConstraints.offerToReceiveAudio = 0;
-        options.rtcOfferConstraints.offerToReceiveVideo = 0;
-
-        options.rtcAnswerConstraints.offerToReceiveAudio = 0;
-        options.rtcAnswerConstraints.offerToReceiveVideo = 0;
-        break;
-    }
+    options.rtcAnswerConstraints.offerToReceiveAudio = this.media.receiveAudio;
+    options.rtcAnswerConstraints.offerToReceiveVideo = this.media.receiveAudio;
 
     return options;
   }

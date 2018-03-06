@@ -101,6 +101,8 @@ module.exports = class Information extends EventEmitter
     const profile = this.description.profile;
     const user = this.users.getUser(this._conference.from);
 
+    if (!user) { return false; }
+
     switch (profile) 
     {
       case 'default':
