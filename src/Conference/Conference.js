@@ -1,6 +1,8 @@
 const EventEmitter = require('events').EventEmitter;
 const Command = require('../Command/Command');
 const Information = require('./Info/Information');
+const Description = require('./Info/Description');
+const Error = require('../Error/Error');
 const Channel = require('../Channel/Channel');
 const MediaChannel = require('../Channel/MediaChannel');
 const Utils = require('../Base/Utils');
@@ -54,6 +56,15 @@ const C = {
 
 module.exports = class Conference extends EventEmitter
 {
+  static parseInformation(xml)
+  {
+    const information = new Information();
+
+    information.update(xml);
+
+    return information;
+  }
+
   constructor()
   {
     super();
@@ -314,6 +325,11 @@ module.exports = class Conference extends EventEmitter
     this.focusChannel.disconnect();
     this.mediaChannel.disconnect();
     this.shareChannel.disconnect();
+  }
+
+  parseInformation(xml)
+  {
+    return Conference.parseInformation(xml);
   }
 
   getConference() 
@@ -735,7 +751,10 @@ module.exports = class Conference extends EventEmitter
 
     this.information.clear();
 
-    this.emit('disconnected', data.cause);
+    // TODO
+    // filter normal ended and set error ?
+
+    this.emit('disconnected', data);
   }
 
   onFailed(data)
@@ -810,7 +829,8 @@ module.exports = class Conference extends EventEmitter
     debug('redirect()');
 
     const defer = Utils.defer();
-    const session = this.ua.call(target, { withoutSDP: true });
+
+    let session = this.ua.call(target, { withoutSDP: true });
 
     session.once('failed', (data) =>
     {
@@ -820,7 +840,7 @@ module.exports = class Conference extends EventEmitter
 
       if (!message)
       {
-        defer.reject(data);
+        defer.reject(new Error.FreeSwitchError(data));
         
         return;
       }
@@ -849,20 +869,28 @@ module.exports = class Conference extends EventEmitter
             else 
             {
               data.cause = SIP.C.causes.NOT_FOUND;
-              defer.reject(data);
+              defer.reject(new Error.FreeSwitchError(data));
             }
           }
           break;
         case /^480$/.test(message.status_code):
-          // TODO:parse conference info here.
-          data.conference = {};
+          {
+            const info = Utils.objectify(message.body)['conference-info'];
+            const description = new Description();
+            const error = new Error.FreeSwitchError(data);
 
-          defer.reject(data);
+            description.update(info['conference-description'], true);
+            error.code = message.status_code;
+            error.description = description;
+            defer.reject(error);
+          }
           break;
         default:
-          defer.reject(data);
+          defer.reject(new Error.FreeSwitchError(data));
           break;
       }
+
+      session = null;
     });
 
     return defer.promise;

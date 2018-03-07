@@ -16,7 +16,8 @@ module.exports = class Information extends EventEmitter
 
     this._conference = conference;
 
-    this._version = 0;
+    this._entity = undefined;
+    this._version = -1;
     this._time = undefined;
     this._description = new Description(this);
     this._state = new State(this);
@@ -26,11 +27,11 @@ module.exports = class Information extends EventEmitter
 
   get from()
   {
-    return this._conference.from;
+    return this._conference?this._conference.from:null;
   }
   get entity()
   {
-    return this._conference.entity;
+    return this._conference?this._conference.entity:this._entity;
   }
   get version()
   {
@@ -63,7 +64,11 @@ module.exports = class Information extends EventEmitter
 
     debug('update information: %o', info);
 
-    if (this.entity !== info['@entity'])
+    if (!this.entity)
+    {
+      this._entity = info['@entity'];
+    }
+    else if (this.entity !== info['@entity'])
     {
       debug('entity unmatch!');
       
@@ -86,6 +91,8 @@ module.exports = class Information extends EventEmitter
         default:
           break;
       }
+
+      this._version = info['@version'];
     }
   }
 
@@ -94,12 +101,14 @@ module.exports = class Information extends EventEmitter
     this._deletedUpdate();
   }
 
-  isShareAvariable()
+  isShareAvariable(userEntity)
   {
+    userEntity = userEntity || this._conference.from;
+
     let sharePermission = false;
 
     const profile = this.description.profile;
-    const user = this.users.getUser(this._conference.from);
+    const user = this.users.getUser(userEntity);
 
     if (!user) { return false; }
 
@@ -141,6 +150,8 @@ module.exports = class Information extends EventEmitter
 
     this._checkUpdate(info);
 
+    if (!this._conference) { return; }
+    
     const participantCountDiff = this.users.participantCount - participantCount;
 
     if (participantCountDiff > 0)
@@ -167,7 +178,9 @@ module.exports = class Information extends EventEmitter
     this._users.update({}, true);
   }
   _checkUpdate(info)
-  {
+  { 
+    if (!this._conference) { return; }
+
     if (info['conference-description'])
     {
       this._conference._descriptionUpdated();

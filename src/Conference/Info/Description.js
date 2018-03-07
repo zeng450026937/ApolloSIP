@@ -1,4 +1,5 @@
 const Item = require('./Item');
+const Utils = require('../../Base/Utils');
 
 module.exports = class Description extends Item
 {
@@ -28,6 +29,14 @@ module.exports = class Description extends Item
   get bookStartTime()
   {
     return this.get('book-start-time');
+  }
+  get remindEarly()
+  {
+    return this.get('remind-early');
+  }
+  get createEarly()
+  {
+    return this.get('create-early');
   }
   get confUris()
   {
@@ -76,6 +85,20 @@ module.exports = class Description extends Item
   get subject()
   {
     return this.get('subject');
+  }
+
+  getUri(purpose)
+  {
+    let uris = this.confUris;
+
+    uris = Utils.arrayfy(uris['entry']);
+
+    const uri = uris.find(function(u)
+    {
+      return u['purpose'] === purpose;
+    });
+
+    return uri['uri'];
   }
 
 };

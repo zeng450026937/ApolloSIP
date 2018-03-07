@@ -77,7 +77,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 50);
+/******/ 	return __webpack_require__(__webpack_require__.s = 53);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -90,7 +90,7 @@ return /******/ (function(modules) { // webpackBootstrap
  * Expose `debug()` as the module.
  */
 
-exports = module.exports = __webpack_require__(68);
+exports = module.exports = __webpack_require__(71);
 exports.log = log;
 exports.formatArgs = formatArgs;
 exports.save = save;
@@ -280,7 +280,7 @@ function localstorage() {
   } catch (e) {}
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(67)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(70)))
 
 /***/ }),
 /* 1 */
@@ -1344,9 +1344,9 @@ function isUndefined(arg) {
 /* WEBPACK VAR INJECTION */(function(global) {
 
 var toplevel = global.window || global;
-var xmlparser = __webpack_require__(84);
-var xmlbuilder = __webpack_require__(86);
-var fecha = __webpack_require__(90);
+var xmlparser = __webpack_require__(87);
+var xmlbuilder = __webpack_require__(89);
+var fecha = __webpack_require__(93);
 
 fecha.masks.default = 'YYYY-MM-DD HH:mm:ss';
 
@@ -15248,7 +15248,7 @@ module.exports = {
 "use strict";
 
 
-module.exports = __webpack_require__(51);
+module.exports = __webpack_require__(54);
 
 /***/ }),
 /* 9 */
@@ -15893,7 +15893,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var SIP_C = __webpack_require__(1);
-var DigestAuthentication = __webpack_require__(70);
+var DigestAuthentication = __webpack_require__(73);
 var Transactions = __webpack_require__(14);
 var debug = __webpack_require__(0)('SIP:RequestSender');
 
@@ -17900,8 +17900,8 @@ module.exports = function () {
 "use strict";
 
 
-var parser = __webpack_require__(65);
-var writer = __webpack_require__(66);
+var parser = __webpack_require__(68);
+var writer = __webpack_require__(69);
 
 exports.write = writer;
 exports.parse = parser.parse;
@@ -19283,10 +19283,10 @@ var Timers = __webpack_require__(32);
 var SIPMessage = __webpack_require__(7);
 var Dialog = __webpack_require__(38);
 var RequestSender = __webpack_require__(13);
-var RTCSession_DTMF = __webpack_require__(72);
-var RTCSession_Info = __webpack_require__(73);
-var RTCSession_ReferNotifier = __webpack_require__(74);
-var RTCSession_ReferSubscriber = __webpack_require__(75);
+var RTCSession_DTMF = __webpack_require__(75);
+var RTCSession_Info = __webpack_require__(76);
+var RTCSession_ReferNotifier = __webpack_require__(77);
+var RTCSession_ReferSubscriber = __webpack_require__(78);
 var debug = __webpack_require__(0)('SIP:RTCSession');
 var debugerror = __webpack_require__(0)('SIP:ERROR:RTCSession');
 
@@ -22728,7 +22728,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var SIPMessage = __webpack_require__(7);
 var SIP_C = __webpack_require__(1);
 var Transactions = __webpack_require__(14);
-var Dialog_RequestSender = __webpack_require__(71);
+var Dialog_RequestSender = __webpack_require__(74);
 var Utils = __webpack_require__(2);
 var debug = __webpack_require__(0)('SIP:Dialog');
 
@@ -23549,12 +23549,12 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var Channel = __webpack_require__(46);
-var Browser = __webpack_require__(101);
+var Browser = __webpack_require__(104);
 var SDPTransform = __webpack_require__(31);
 var Utils = __webpack_require__(4);
 var SIP = __webpack_require__(8);
-var Media = __webpack_require__(103);
-var MediaStats = __webpack_require__(104);
+var Media = __webpack_require__(106);
+var MediaStats = __webpack_require__(107);
 
 var debug = SIP.debug('Apollo:MediaChannel');
 
@@ -24247,6 +24247,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var EventEmitter = __webpack_require__(3).EventEmitter;
+var Error = __webpack_require__(47);
 var Utils = __webpack_require__(4);
 var SIP = __webpack_require__(8);
 
@@ -24395,7 +24396,7 @@ module.exports = function (_EventEmitter) {
 
       this.session = null;
 
-      this.emit('ended', data);
+      this.emit('ended', new Error.FreeSwitchError(data));
     }
   }, {
     key: '_failed',
@@ -24404,7 +24405,9 @@ module.exports = function (_EventEmitter) {
 
       this.session = null;
 
-      this.emit('failed', data);
+      this._parseErrorCode(data);
+
+      this.emit('failed', new Error.FreeSwitchError(data));
     }
   }, {
     key: '_newDTMF',
@@ -24588,6 +24591,104 @@ module.exports = function (_EventEmitter) {
 "use strict";
 
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var ErrorMap = {
+  60001: 'Uri Unknown',
+  60002: 'Locked',
+  60003: 'User Count Exceed',
+  60004: 'User Duplicate',
+  60005: 'Send MSG To MCU Failed',
+  60006: 'MCU Request SESS Failed',
+  60007: 'MCU Response IP Invalid',
+  60008: 'GEN MCU SDP Failed',
+  60009: 'MCU Start Session Failed',
+  60010: 'MCU Notify QUIT',
+  60011: 'Endpoint Add Failed',
+  60012: 'User Deleted',
+  60013: 'Conference Deleted',
+  60014: 'Uri Invalid',
+  60015: 'MCU Start AUTH Session Failed',
+  60016: 'License Amount Limit',
+  60017: 'MCU Keep Alive Failed',
+  60018: 'MCU Create Failed',
+  60019: 'MCU Set Param Failed',
+  60020: 'MCU Not Connected',
+  60021: 'Alloc NUM Failed',
+  60022: 'Not Started',
+  60023: 'Has End',
+  60024: 'Join Multi Endpoint',
+  60025: 'Endpoint Duplicate',
+  60026: 'Invalid C3P Request',
+  60027: 'MCU Entry Not Found',
+  60028: 'User Resource Not Found',
+  60029: 'Permission Denied',
+  60030: 'Invalid PIN',
+  60031: 'Invite Miss User Entity',
+  60032: 'Miss Book Info By ID',
+  60033: 'New Failed',
+  60034: 'Run Failed',
+  60035: 'MCU Session Keep Alive Failed',
+  60036: 'New Share Joined',
+  60037: 'Broadcast Layout Not Found',
+  60038: 'Invite VMR Failed',
+  60039: 'Interactive Broadcast Disable',
+  60040: 'Broadcast License Amount Limit',
+  60041: 'Blacklist Limit',
+  60042: 'IP Direct Blacklist Limit',
+  60043: 'Sip Invite Trans H323'
+};
+
+var FreeSwitchError = function (_Error) {
+  _inherits(FreeSwitchError, _Error);
+
+  function FreeSwitchError(data) {
+    _classCallCheck(this, FreeSwitchError);
+
+    var _this = _possibleConstructorReturn(this, (FreeSwitchError.__proto__ || Object.getPrototypeOf(FreeSwitchError)).call(this));
+
+    _this.name = 'FreeSwitch Error';
+    _this.originator = data.originator || 'local';
+    _this.code = data.code || 0;
+    _this.cause = data.cause || 'Unknown';
+    _this.message = data.message || 'Unknown Error';
+
+    if (data.message) {
+      var reason = data.message.getHeader('Reason');
+      // Reason Header
+      // APOLLO;cause=60032;text="Conference miss book info by id"
+
+      if (reason) {
+        var code = reason.split(';')[1].split('=')[1];
+        var cause = ErrorMap[code];
+        var message = reason.split(';')[2].split('=')[1];
+
+        _this.code = Number.parseInt(code);
+        _this.cause = cause;
+        _this.message = message;
+      }
+    }
+    return _this;
+  }
+
+  return FreeSwitchError;
+}(Error);
+
+module.exports = {
+  FreeSwitchError: FreeSwitchError
+};
+
+/***/ }),
+/* 48 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -24695,7 +24796,7 @@ module.exports = function (_EventEmitter) {
 }(EventEmitter);
 
 /***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24710,8 +24811,10 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var EventEmitter = __webpack_require__(3).EventEmitter;
-var Command = __webpack_require__(49);
-var Information = __webpack_require__(106);
+var Command = __webpack_require__(50);
+var Information = __webpack_require__(51);
+var Description = __webpack_require__(52);
+var Error = __webpack_require__(47);
 var Channel = __webpack_require__(46);
 var MediaChannel = __webpack_require__(45);
 var Utils = __webpack_require__(4);
@@ -24765,6 +24868,17 @@ var C = {
 
 module.exports = function (_EventEmitter) {
   _inherits(Conference, _EventEmitter);
+
+  _createClass(Conference, null, [{
+    key: 'parseInformation',
+    value: function parseInformation(xml) {
+      var information = new Information();
+
+      information.update(xml);
+
+      return information;
+    }
+  }]);
 
   function Conference() {
     _classCallCheck(this, Conference);
@@ -24885,6 +24999,11 @@ module.exports = function (_EventEmitter) {
       this.focusChannel.disconnect();
       this.mediaChannel.disconnect();
       this.shareChannel.disconnect();
+    }
+  }, {
+    key: 'parseInformation',
+    value: function parseInformation(xml) {
+      return Conference.parseInformation(xml);
     }
   }, {
     key: 'getConference',
@@ -25347,7 +25466,10 @@ module.exports = function (_EventEmitter) {
 
       this.information.clear();
 
-      this.emit('disconnected', data.cause);
+      // TODO
+      // filter normal ended and set error ?
+
+      this.emit('disconnected', data);
     }
   }, {
     key: 'onFailed',
@@ -25427,6 +25549,7 @@ module.exports = function (_EventEmitter) {
       debug('redirect()');
 
       var defer = Utils.defer();
+
       var session = this.ua.call(target, { withoutSDP: true });
 
       session.once('failed', function (data) {
@@ -25435,7 +25558,7 @@ module.exports = function (_EventEmitter) {
         var message = data.message;
 
         if (!message) {
-          defer.reject(data);
+          defer.reject(new Error.FreeSwitchError(data));
 
           return;
         }
@@ -25459,20 +25582,28 @@ module.exports = function (_EventEmitter) {
                 defer.resolve(targets);
               } else {
                 data.cause = SIP.C.causes.NOT_FOUND;
-                defer.reject(data);
+                defer.reject(new Error.FreeSwitchError(data));
               }
             }
             break;
           case /^480$/.test(message.status_code):
-            // TODO:parse conference info here.
-            data.conference = {};
+            {
+              var info = Utils.objectify(message.body)['conference-info'];
+              var description = new Description();
+              var error = new Error.FreeSwitchError(data);
 
-            defer.reject(data);
+              description.update(info['conference-description'], true);
+              error.code = message.status_code;
+              error.description = description;
+              defer.reject(error);
+            }
             break;
           default:
-            defer.reject(data);
+            defer.reject(new Error.FreeSwitchError(data));
             break;
         }
+
+        session = null;
       });
 
       return defer.promise;
@@ -25679,7 +25810,7 @@ module.exports = function (_EventEmitter) {
 }(EventEmitter);
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25743,7 +25874,374 @@ module.exports = function () {
 }();
 
 /***/ }),
-/* 50 */
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var EventEmitter = __webpack_require__(3).EventEmitter;
+var Debug = __webpack_require__(15);
+var Utils = __webpack_require__(4);
+var Description = __webpack_require__(52);
+var State = __webpack_require__(109);
+var View = __webpack_require__(110);
+var Users = __webpack_require__(111);
+
+var debug = Debug('Apollo:Information');
+
+module.exports = function (_EventEmitter) {
+  _inherits(Information, _EventEmitter);
+
+  function Information(conference) {
+    _classCallCheck(this, Information);
+
+    var _this = _possibleConstructorReturn(this, (Information.__proto__ || Object.getPrototypeOf(Information)).call(this));
+
+    _this._conference = conference;
+
+    _this._entity = undefined;
+    _this._version = -1;
+    _this._time = undefined;
+    _this._description = new Description(_this);
+    _this._state = new State(_this);
+    _this._view = new View(_this);
+    _this._users = new Users(_this);
+    return _this;
+  }
+
+  _createClass(Information, [{
+    key: 'update',
+    value: function update(xml) {
+      var info = Utils.objectify(xml)['conference-info'];
+
+      debug('update information: %o', info);
+
+      if (!this.entity) {
+        this._entity = info['@entity'];
+      } else if (this.entity !== info['@entity']) {
+        debug('entity unmatch!');
+
+        return;
+      }
+
+      if (this.version < info['@version']) {
+        switch (info['@state']) {
+          case 'full':
+            this._fullUpdate(info);
+            break;
+          case 'partial':
+            this._particalUpdate(info);
+            break;
+          case 'deleted':
+            this._deletedUpdate();
+            break;
+          default:
+            break;
+        }
+
+        this._version = info['@version'];
+      }
+    }
+  }, {
+    key: 'clear',
+    value: function clear() {
+      this._deletedUpdate();
+    }
+  }, {
+    key: 'isShareAvariable',
+    value: function isShareAvariable(userEntity) {
+      userEntity = userEntity || this._conference.from;
+
+      var sharePermission = false;
+
+      var profile = this.description.profile;
+      var user = this.users.getUser(userEntity);
+
+      if (!user) {
+        return false;
+      }
+
+      switch (profile) {
+        case 'default':
+          sharePermission = user.roles.permission === 'presenter' ? true : false;
+          break;
+        case 'demonstrator':
+          sharePermission = user.roles.demostate === 'demonstrator' ? true : user.roles.permission === 'attendee' ? false : true;
+          break;
+      }
+
+      return sharePermission;
+    }
+  }, {
+    key: '_fullUpdate',
+    value: function _fullUpdate(info) {
+      this._time = info['now-time'];
+
+      this._description.update(info['conference-description'], true);
+      this._state.update(info['conference-state'], true);
+      this._view.update(info['conference-view'], true);
+      this._users.update(info['users'], true);
+
+      this._checkUpdate(info);
+    }
+  }, {
+    key: '_particalUpdate',
+    value: function _particalUpdate(info) {
+      var participantCount = this.users.participantCount;
+
+      this._time = info['now-time'];
+
+      this._description.update(info['conference-description']);
+      this._state.update(info['conference-state']);
+      this._view.update(info['conference-view']);
+      this._users.update(info['users']);
+
+      this._checkUpdate(info);
+
+      if (!this._conference) {
+        return;
+      }
+
+      var participantCountDiff = this.users.participantCount - participantCount;
+
+      if (participantCountDiff > 0) {
+        this._conference._userAdded(this.users.updatedUser);
+      } else if (participantCountDiff === 0) {
+        this._conference._userUpdated(this.users.updatedUser);
+      } else {
+        this._conference._userDeleted(this.users.updatedUser);
+      }
+    }
+  }, {
+    key: '_deletedUpdate',
+    value: function _deletedUpdate() {
+      this._version = 0;
+      this._time = '';
+
+      this._description.update({}, true);
+      this._state.update({}, true);
+      this._view.update({}, true);
+      this._users.update({}, true);
+    }
+  }, {
+    key: '_checkUpdate',
+    value: function _checkUpdate(info) {
+      if (!this._conference) {
+        return;
+      }
+
+      if (info['conference-description']) {
+        this._conference._descriptionUpdated();
+      }
+      if (info['conference-state']) {
+        this._conference._stateUpdated();
+      }
+      if (info['conference-view']) {
+        this._conference._viewUpdated();
+      }
+      if (info['users']) {
+        this._conference._usersUpdated();
+      }
+    }
+  }, {
+    key: 'from',
+    get: function get() {
+      return this._conference ? this._conference.from : null;
+    }
+  }, {
+    key: 'entity',
+    get: function get() {
+      return this._conference ? this._conference.entity : this._entity;
+    }
+  }, {
+    key: 'version',
+    get: function get() {
+      return this._version;
+    }
+  }, {
+    key: 'time',
+    get: function get() {
+      return this._time;
+    }
+  }, {
+    key: 'description',
+    get: function get() {
+      return this._description;
+    }
+  }, {
+    key: 'state',
+    get: function get() {
+      return this._state;
+    }
+  }, {
+    key: 'view',
+    get: function get() {
+      return this._view;
+    }
+  }, {
+    key: 'users',
+    get: function get() {
+      return this._users;
+    }
+  }]);
+
+  return Information;
+}(EventEmitter);
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Item = __webpack_require__(16);
+var Utils = __webpack_require__(4);
+
+module.exports = function (_Item) {
+  _inherits(Description, _Item);
+
+  function Description(information) {
+    _classCallCheck(this, Description);
+
+    var _this = _possibleConstructorReturn(this, (Description.__proto__ || Object.getPrototypeOf(Description)).call(this));
+
+    _this._information = information;
+    return _this;
+  }
+
+  _createClass(Description, [{
+    key: 'getUri',
+    value: function getUri(purpose) {
+      var uris = this.confUris;
+
+      uris = Utils.arrayfy(uris['entry']);
+
+      var uri = uris.find(function (u) {
+        return u['purpose'] === purpose;
+      });
+
+      return uri['uri'];
+    }
+  }, {
+    key: 'admissionPolicy',
+    get: function get() {
+      return this.get('subject');
+    }
+  }, {
+    key: 'attendeePin',
+    get: function get() {
+      return this.get('attendee-pin');
+    }
+  }, {
+    key: 'autopromote',
+    get: function get() {
+      return this.get('autopromote');
+    }
+  }, {
+    key: 'bookExpiryTime',
+    get: function get() {
+      return this.get('book-expiry-time');
+    }
+  }, {
+    key: 'bookStartTime',
+    get: function get() {
+      return this.get('book-start-time');
+    }
+  }, {
+    key: 'remindEarly',
+    get: function get() {
+      return this.get('remind-early');
+    }
+  }, {
+    key: 'createEarly',
+    get: function get() {
+      return this.get('create-early');
+    }
+  }, {
+    key: 'confUris',
+    get: function get() {
+      return this.get('conf-uris');
+    }
+  }, {
+    key: 'conferenceId',
+    get: function get() {
+      return this.get('conference-id');
+    }
+  }, {
+    key: 'conferenceNumber',
+    get: function get() {
+      return this.get('conference-number');
+    }
+  }, {
+    key: 'conferenceType',
+    get: function get() {
+      return this.get('conference-type');
+    }
+  }, {
+    key: 'maximumUserCount',
+    get: function get() {
+      return this.get('maximum-user-count');
+    }
+  }, {
+    key: 'organizer',
+    get: function get() {
+      return this.get('organizer');
+    }
+  }, {
+    key: 'presenterPin',
+    get: function get() {
+      return this.get('presenter-pin');
+    }
+  }, {
+    key: 'profile',
+    get: function get() {
+      return this.get('profile');
+    }
+  }, {
+    key: 'scheduleId',
+    get: function get() {
+      return this.get('schedule-id');
+    }
+  }, {
+    key: 'serverMode',
+    get: function get() {
+      return this.get('server-mode');
+    }
+  }, {
+    key: 'startTime',
+    get: function get() {
+      return this.get('start-time');
+    }
+  }, {
+    key: 'subject',
+    get: function get() {
+      return this.get('subject');
+    }
+  }]);
+
+  return Description;
+}(Item);
+
+/***/ }),
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25751,11 +26249,11 @@ module.exports = function () {
 
 var SIP = __webpack_require__(8);
 var Utils = __webpack_require__(4);
-var UA = __webpack_require__(91);
+var UA = __webpack_require__(94);
 var Call = __webpack_require__(44);
-var CallManager = __webpack_require__(105);
-var Conference = __webpack_require__(48);
-var ConferenceManager = __webpack_require__(112);
+var CallManager = __webpack_require__(108);
+var Conference = __webpack_require__(49);
+var ConferenceManager = __webpack_require__(113);
 
 var Apollo = {
   SIP: SIP,
@@ -25771,22 +26269,22 @@ var Apollo = {
 module.exports = Apollo;
 
 /***/ }),
-/* 51 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var adapter = __webpack_require__(52);
+var adapter = __webpack_require__(55);
 var pkg = __webpack_require__(35);
 var C = __webpack_require__(1);
 var Exceptions = __webpack_require__(10);
 var Utils = __webpack_require__(2);
-var UA = __webpack_require__(63);
+var UA = __webpack_require__(66);
 var URI = __webpack_require__(12);
 var NameAddrHeader = __webpack_require__(30);
 var Grammar = __webpack_require__(6);
-var WebSocketInterface = __webpack_require__(83);
+var WebSocketInterface = __webpack_require__(86);
 var debug = __webpack_require__(0)('SIP');
 
 debug('version %s', pkg.version);
@@ -25816,7 +26314,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 52 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25831,13 +26329,13 @@ module.exports = {
 
 
 
-var adapterFactory = __webpack_require__(53);
+var adapterFactory = __webpack_require__(56);
 module.exports = adapterFactory({window: global.window});
 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 53 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25881,11 +26379,11 @@ module.exports = function(dependencies, opts) {
   // require('./utils').disableLog(false);
 
   // Browser shims.
-  var chromeShim = __webpack_require__(54) || null;
-  var edgeShim = __webpack_require__(56) || null;
-  var firefoxShim = __webpack_require__(59) || null;
-  var safariShim = __webpack_require__(61) || null;
-  var commonShim = __webpack_require__(62) || null;
+  var chromeShim = __webpack_require__(57) || null;
+  var edgeShim = __webpack_require__(59) || null;
+  var firefoxShim = __webpack_require__(62) || null;
+  var safariShim = __webpack_require__(64) || null;
+  var commonShim = __webpack_require__(65) || null;
 
   // Export to the adapter global object visible in the browser.
   var adapter = {
@@ -25993,7 +26491,7 @@ module.exports = function(dependencies, opts) {
 
 
 /***/ }),
-/* 54 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26011,7 +26509,7 @@ var utils = __webpack_require__(9);
 var logging = utils.log;
 
 module.exports = {
-  shimGetUserMedia: __webpack_require__(55),
+  shimGetUserMedia: __webpack_require__(58),
   shimMediaStream: function(window) {
     window.MediaStream = window.MediaStream || window.webkitMediaStream;
   },
@@ -26745,7 +27243,7 @@ module.exports = {
 
 
 /***/ }),
-/* 55 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26992,7 +27490,7 @@ module.exports = function(window) {
 
 
 /***/ }),
-/* 56 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27007,10 +27505,10 @@ module.exports = function(window) {
 
 
 var utils = __webpack_require__(9);
-var shimRTCPeerConnection = __webpack_require__(57);
+var shimRTCPeerConnection = __webpack_require__(60);
 
 module.exports = {
-  shimGetUserMedia: __webpack_require__(58),
+  shimGetUserMedia: __webpack_require__(61),
   shimPeerConnection: function(window) {
     var browserDetails = utils.detectBrowser(window);
 
@@ -27079,7 +27577,7 @@ module.exports = {
 
 
 /***/ }),
-/* 57 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -28749,7 +29247,7 @@ module.exports = function(window, edgeVersion) {
 
 
 /***/ }),
-/* 58 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -28790,7 +29288,7 @@ module.exports = function(window) {
 
 
 /***/ }),
-/* 59 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -28807,7 +29305,7 @@ module.exports = function(window) {
 var utils = __webpack_require__(9);
 
 module.exports = {
-  shimGetUserMedia: __webpack_require__(60),
+  shimGetUserMedia: __webpack_require__(63),
   shimOnTrack: function(window) {
     if (typeof window === 'object' && window.RTCPeerConnection && !('ontrack' in
         window.RTCPeerConnection.prototype)) {
@@ -29014,7 +29512,7 @@ module.exports = {
 
 
 /***/ }),
-/* 60 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29230,7 +29728,7 @@ module.exports = function(window) {
 
 
 /***/ }),
-/* 61 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29536,7 +30034,7 @@ module.exports = {
 
 
 /***/ }),
-/* 62 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29817,7 +30315,7 @@ module.exports = {
 
 
 /***/ }),
-/* 63 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29833,21 +30331,21 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var EventEmitter = __webpack_require__(3).EventEmitter;
 var SIP_C = __webpack_require__(1);
-var Registrator = __webpack_require__(64);
+var Registrator = __webpack_require__(67);
 var RTCSession = __webpack_require__(37);
-var Message = __webpack_require__(76);
-var Service = __webpack_require__(77);
-var Subscription = __webpack_require__(78);
+var Message = __webpack_require__(79);
+var Service = __webpack_require__(80);
+var Subscription = __webpack_require__(81);
 var Transactions = __webpack_require__(14);
-var Transport = __webpack_require__(79);
+var Transport = __webpack_require__(82);
 var Utils = __webpack_require__(2);
 var Exceptions = __webpack_require__(10);
 var URI = __webpack_require__(12);
 var Grammar = __webpack_require__(6);
-var Parser = __webpack_require__(80);
+var Parser = __webpack_require__(83);
 var SIPMessage = __webpack_require__(7);
-var sanityCheck = __webpack_require__(81);
-var config = __webpack_require__(82);
+var sanityCheck = __webpack_require__(84);
+var config = __webpack_require__(85);
 var debug = __webpack_require__(0)('SIP:UA');
 var debugerror = __webpack_require__(0)('SIP:ERROR:UA');
 
@@ -30994,7 +31492,7 @@ function onTransportData(data) {
 }
 
 /***/ }),
-/* 64 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31360,7 +31858,7 @@ module.exports = function () {
 }();
 
 /***/ }),
-/* 65 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31488,7 +31986,7 @@ exports.parseSimulcastStreamList = function (str) {
 };
 
 /***/ }),
-/* 66 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31600,7 +32098,7 @@ module.exports = function (session, opts) {
 };
 
 /***/ }),
-/* 67 */
+/* 70 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -31790,7 +32288,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 68 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -31806,7 +32304,7 @@ exports.coerce = coerce;
 exports.disable = disable;
 exports.enable = enable;
 exports.enabled = enabled;
-exports.humanize = __webpack_require__(69);
+exports.humanize = __webpack_require__(72);
 
 /**
  * Active `debug` instances.
@@ -32021,7 +32519,7 @@ function coerce(val) {
 
 
 /***/ }),
-/* 69 */
+/* 72 */
 /***/ (function(module, exports) {
 
 /**
@@ -32179,7 +32677,7 @@ function plural(ms, n, name) {
 
 
 /***/ }),
-/* 70 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32395,7 +32893,7 @@ module.exports = function () {
 }();
 
 /***/ }),
-/* 71 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32521,7 +33019,7 @@ module.exports = function () {
 }();
 
 /***/ }),
-/* 72 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32714,7 +33212,7 @@ module.exports = function (_EventEmitter) {
 module.exports.C = C;
 
 /***/ }),
-/* 73 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32851,7 +33349,7 @@ module.exports = function (_EventEmitter) {
 }(EventEmitter);
 
 /***/ }),
-/* 74 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32920,7 +33418,7 @@ module.exports = function () {
 }();
 
 /***/ }),
-/* 75 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -33092,7 +33590,7 @@ module.exports = function (_EventEmitter) {
 }(EventEmitter);
 
 /***/ }),
-/* 76 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -33384,7 +33882,7 @@ module.exports = function (_EventEmitter) {
 }(EventEmitter);
 
 /***/ }),
-/* 77 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -33675,7 +34173,7 @@ module.exports = function (_EventEmitter) {
 }(EventEmitter);
 
 /***/ }),
-/* 78 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -34277,7 +34775,7 @@ module.exports = function (_EventEmitter) {
 }(EventEmitter);
 
 /***/ }),
-/* 79 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -34624,7 +35122,7 @@ module.exports = function () {
 }();
 
 /***/ }),
-/* 80 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -34945,7 +35443,7 @@ function parseHeader(message, data, headerStart, headerEnd) {
 }
 
 /***/ }),
-/* 81 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -35271,7 +35769,7 @@ function reply(status_code) {
 }
 
 /***/ }),
-/* 82 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -35558,7 +36056,7 @@ exports.load = function (dst, src) {
 };
 
 /***/ }),
-/* 83 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -35746,7 +36244,7 @@ module.exports = function () {
 }();
 
 /***/ }),
-/* 84 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getAllMatches = __webpack_require__(40).getAllMatches;
@@ -35956,11 +36454,11 @@ var convertToJson = function (node, arrayMode){
 exports.parse = xml2json;
 exports.getTraversalObj = getTraversalObj;
 exports.convertToJson = convertToJson;
-exports.validate = __webpack_require__(85).validate;
+exports.validate = __webpack_require__(88).validate;
 
 
 /***/ }),
-/* 85 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var util = __webpack_require__(40);
@@ -36183,7 +36681,7 @@ function validateTagName(tagname){
 
 
 /***/ }),
-/* 86 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Generated by CoffeeScript 1.12.6
@@ -36192,13 +36690,13 @@ function validateTagName(tagname){
 
   ref = __webpack_require__(11), assign = ref.assign, isFunction = ref.isFunction;
 
-  XMLDocument = __webpack_require__(87);
+  XMLDocument = __webpack_require__(90);
 
-  XMLDocumentCB = __webpack_require__(88);
+  XMLDocumentCB = __webpack_require__(91);
 
   XMLStringWriter = __webpack_require__(33);
 
-  XMLStreamWriter = __webpack_require__(89);
+  XMLStreamWriter = __webpack_require__(92);
 
   module.exports.create = function(name, xmldec, doctype, options) {
     var doc, root;
@@ -36242,7 +36740,7 @@ function validateTagName(tagname){
 
 
 /***/ }),
-/* 87 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Generated by CoffeeScript 1.12.6
@@ -36296,7 +36794,7 @@ function validateTagName(tagname){
 
 
 /***/ }),
-/* 88 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Generated by CoffeeScript 1.12.6
@@ -36704,7 +37202,7 @@ function validateTagName(tagname){
 
 
 /***/ }),
-/* 89 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Generated by CoffeeScript 1.12.6
@@ -36989,7 +37487,7 @@ function validateTagName(tagname){
 
 
 /***/ }),
-/* 90 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_RESULT__;(function (main) {
@@ -37330,7 +37828,7 @@ var __WEBPACK_AMD_DEFINE_RESULT__;(function (main) {
 
 
 /***/ }),
-/* 91 */
+/* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -37347,9 +37845,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var SIP = __webpack_require__(8);
-var Url = __webpack_require__(92);
-var ApolloControl = __webpack_require__(99);
-var ApolloProvision = __webpack_require__(100);
+var Url = __webpack_require__(95);
+var ApolloControl = __webpack_require__(102);
+var ApolloProvision = __webpack_require__(103);
 var debug = SIP.debug('Apollo:UA');
 
 module.exports = function (_SIP$UA) {
@@ -37737,7 +38235,7 @@ module.exports = function (_SIP$UA) {
 }(SIP.UA);
 
 /***/ }),
-/* 92 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -37764,8 +38262,8 @@ module.exports = function (_SIP$UA) {
 
 
 
-var punycode = __webpack_require__(93);
-var util = __webpack_require__(95);
+var punycode = __webpack_require__(96);
+var util = __webpack_require__(98);
 
 exports.parse = urlParse;
 exports.resolve = urlResolve;
@@ -37840,7 +38338,7 @@ var protocolPattern = /^([a-z0-9.+-]+:)/i,
       'gopher:': true,
       'file:': true
     },
-    querystring = __webpack_require__(96);
+    querystring = __webpack_require__(99);
 
 function urlParse(url, parseQueryString, slashesDenoteHost) {
   if (url && util.isObject(url) && url instanceof Url) return url;
@@ -38476,7 +38974,7 @@ Url.prototype.parseHost = function() {
 
 
 /***/ }),
-/* 93 */
+/* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module, global) {var __WEBPACK_AMD_DEFINE_RESULT__;/*! https://mths.be/punycode v1.4.1 by @mathias */
@@ -39012,10 +39510,10 @@ Url.prototype.parseHost = function() {
 
 }(this));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(94)(module), __webpack_require__(17)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(97)(module), __webpack_require__(17)))
 
 /***/ }),
-/* 94 */
+/* 97 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -39043,7 +39541,7 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 95 */
+/* 98 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -39066,18 +39564,18 @@ module.exports = {
 
 
 /***/ }),
-/* 96 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-exports.decode = exports.parse = __webpack_require__(97);
-exports.encode = exports.stringify = __webpack_require__(98);
+exports.decode = exports.parse = __webpack_require__(100);
+exports.encode = exports.stringify = __webpack_require__(101);
 
 
 /***/ }),
-/* 97 */
+/* 100 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -39168,7 +39666,7 @@ var isArray = Array.isArray || function (xs) {
 
 
 /***/ }),
-/* 98 */
+/* 101 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -39260,7 +39758,7 @@ var objectKeys = Object.keys || function (obj) {
 
 
 /***/ }),
-/* 99 */
+/* 102 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -39424,7 +39922,7 @@ var ApolloControl = function (_EventEmitter) {
 module.exports = ApolloControl;
 
 /***/ }),
-/* 100 */
+/* 103 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -39608,7 +40106,7 @@ module.exports = function (_EventEmitter) {
 }(EventEmitter);
 
 /***/ }),
-/* 101 */
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -39619,7 +40117,7 @@ module.exports = function (_EventEmitter) {
 
 !function (root, name, definition) {
   if (typeof module != 'undefined' && module.exports) module.exports = definition()
-  else if (true) __webpack_require__(102)(name, definition)
+  else if (true) __webpack_require__(105)(name, definition)
   else root[name] = definition()
 }(this, 'bowser', function () {
   /**
@@ -40234,7 +40732,7 @@ module.exports = function (_EventEmitter) {
 
 
 /***/ }),
-/* 102 */
+/* 105 */
 /***/ (function(module, exports) {
 
 module.exports = function() {
@@ -40243,7 +40741,7 @@ module.exports = function() {
 
 
 /***/ }),
-/* 103 */
+/* 106 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -40455,7 +40953,7 @@ module.exports = function () {
 }();
 
 /***/ }),
-/* 104 */
+/* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -40820,7 +41318,7 @@ var MediaStats = function () {
 module.exports = MediaStats;
 
 /***/ }),
-/* 105 */
+/* 108 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -40834,7 +41332,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Manager = __webpack_require__(47);
+var Manager = __webpack_require__(48);
 var Call = __webpack_require__(44);
 
 module.exports = function (_Manager) {
@@ -40874,335 +41372,7 @@ module.exports = function (_Manager) {
 }(Manager);
 
 /***/ }),
-/* 106 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var EventEmitter = __webpack_require__(3).EventEmitter;
-var Debug = __webpack_require__(15);
-var Utils = __webpack_require__(4);
-var Description = __webpack_require__(107);
-var State = __webpack_require__(108);
-var View = __webpack_require__(109);
-var Users = __webpack_require__(110);
-
-var debug = Debug('Apollo:Information');
-
-module.exports = function (_EventEmitter) {
-  _inherits(Information, _EventEmitter);
-
-  function Information(conference) {
-    _classCallCheck(this, Information);
-
-    var _this = _possibleConstructorReturn(this, (Information.__proto__ || Object.getPrototypeOf(Information)).call(this));
-
-    _this._conference = conference;
-
-    _this._version = 0;
-    _this._time = undefined;
-    _this._description = new Description(_this);
-    _this._state = new State(_this);
-    _this._view = new View(_this);
-    _this._users = new Users(_this);
-    return _this;
-  }
-
-  _createClass(Information, [{
-    key: 'update',
-    value: function update(xml) {
-      var info = Utils.objectify(xml)['conference-info'];
-
-      debug('update information: %o', info);
-
-      if (this.entity !== info['@entity']) {
-        debug('entity unmatch!');
-
-        return;
-      }
-
-      if (this.version < info['@version']) {
-        switch (info['@state']) {
-          case 'full':
-            this._fullUpdate(info);
-            break;
-          case 'partial':
-            this._particalUpdate(info);
-            break;
-          case 'deleted':
-            this._deletedUpdate();
-            break;
-          default:
-            break;
-        }
-      }
-    }
-  }, {
-    key: 'clear',
-    value: function clear() {
-      this._deletedUpdate();
-    }
-  }, {
-    key: 'isShareAvariable',
-    value: function isShareAvariable() {
-      var sharePermission = false;
-
-      var profile = this.description.profile;
-      var user = this.users.getUser(this._conference.from);
-
-      if (!user) {
-        return false;
-      }
-
-      switch (profile) {
-        case 'default':
-          sharePermission = user.roles.permission === 'presenter' ? true : false;
-          break;
-        case 'demonstrator':
-          sharePermission = user.roles.demostate === 'demonstrator' ? true : user.roles.permission === 'attendee' ? false : true;
-          break;
-      }
-
-      return sharePermission;
-    }
-  }, {
-    key: '_fullUpdate',
-    value: function _fullUpdate(info) {
-      this._time = info['now-time'];
-
-      this._description.update(info['conference-description'], true);
-      this._state.update(info['conference-state'], true);
-      this._view.update(info['conference-view'], true);
-      this._users.update(info['users'], true);
-
-      this._checkUpdate(info);
-    }
-  }, {
-    key: '_particalUpdate',
-    value: function _particalUpdate(info) {
-      var participantCount = this.users.participantCount;
-
-      this._time = info['now-time'];
-
-      this._description.update(info['conference-description']);
-      this._state.update(info['conference-state']);
-      this._view.update(info['conference-view']);
-      this._users.update(info['users']);
-
-      this._checkUpdate(info);
-
-      var participantCountDiff = this.users.participantCount - participantCount;
-
-      if (participantCountDiff > 0) {
-        this._conference._userAdded(this.users.updatedUser);
-      } else if (participantCountDiff === 0) {
-        this._conference._userUpdated(this.users.updatedUser);
-      } else {
-        this._conference._userDeleted(this.users.updatedUser);
-      }
-    }
-  }, {
-    key: '_deletedUpdate',
-    value: function _deletedUpdate() {
-      this._version = 0;
-      this._time = '';
-
-      this._description.update({}, true);
-      this._state.update({}, true);
-      this._view.update({}, true);
-      this._users.update({}, true);
-    }
-  }, {
-    key: '_checkUpdate',
-    value: function _checkUpdate(info) {
-      if (info['conference-description']) {
-        this._conference._descriptionUpdated();
-      }
-      if (info['conference-state']) {
-        this._conference._stateUpdated();
-      }
-      if (info['conference-view']) {
-        this._conference._viewUpdated();
-      }
-      if (info['users']) {
-        this._conference._usersUpdated();
-      }
-    }
-  }, {
-    key: 'from',
-    get: function get() {
-      return this._conference.from;
-    }
-  }, {
-    key: 'entity',
-    get: function get() {
-      return this._conference.entity;
-    }
-  }, {
-    key: 'version',
-    get: function get() {
-      return this._version;
-    }
-  }, {
-    key: 'time',
-    get: function get() {
-      return this._time;
-    }
-  }, {
-    key: 'description',
-    get: function get() {
-      return this._description;
-    }
-  }, {
-    key: 'state',
-    get: function get() {
-      return this._state;
-    }
-  }, {
-    key: 'view',
-    get: function get() {
-      return this._view;
-    }
-  }, {
-    key: 'users',
-    get: function get() {
-      return this._users;
-    }
-  }]);
-
-  return Information;
-}(EventEmitter);
-
-/***/ }),
-/* 107 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var Item = __webpack_require__(16);
-
-module.exports = function (_Item) {
-  _inherits(Description, _Item);
-
-  function Description(information) {
-    _classCallCheck(this, Description);
-
-    var _this = _possibleConstructorReturn(this, (Description.__proto__ || Object.getPrototypeOf(Description)).call(this));
-
-    _this._information = information;
-    return _this;
-  }
-
-  _createClass(Description, [{
-    key: 'admissionPolicy',
-    get: function get() {
-      return this.get('subject');
-    }
-  }, {
-    key: 'attendeePin',
-    get: function get() {
-      return this.get('attendee-pin');
-    }
-  }, {
-    key: 'autopromote',
-    get: function get() {
-      return this.get('autopromote');
-    }
-  }, {
-    key: 'bookExpiryTime',
-    get: function get() {
-      return this.get('book-expiry-time');
-    }
-  }, {
-    key: 'bookStartTime',
-    get: function get() {
-      return this.get('book-start-time');
-    }
-  }, {
-    key: 'confUris',
-    get: function get() {
-      return this.get('conf-uris');
-    }
-  }, {
-    key: 'conferenceId',
-    get: function get() {
-      return this.get('conference-id');
-    }
-  }, {
-    key: 'conferenceNumber',
-    get: function get() {
-      return this.get('conference-number');
-    }
-  }, {
-    key: 'conferenceType',
-    get: function get() {
-      return this.get('conference-type');
-    }
-  }, {
-    key: 'maximumUserCount',
-    get: function get() {
-      return this.get('maximum-user-count');
-    }
-  }, {
-    key: 'organizer',
-    get: function get() {
-      return this.get('organizer');
-    }
-  }, {
-    key: 'presenterPin',
-    get: function get() {
-      return this.get('presenter-pin');
-    }
-  }, {
-    key: 'profile',
-    get: function get() {
-      return this.get('profile');
-    }
-  }, {
-    key: 'scheduleId',
-    get: function get() {
-      return this.get('schedule-id');
-    }
-  }, {
-    key: 'serverMode',
-    get: function get() {
-      return this.get('server-mode');
-    }
-  }, {
-    key: 'startTime',
-    get: function get() {
-      return this.get('start-time');
-    }
-  }, {
-    key: 'subject',
-    get: function get() {
-      return this.get('subject');
-    }
-  }]);
-
-  return Description;
-}(Item);
-
-/***/ }),
-/* 108 */
+/* 109 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -41246,7 +41416,7 @@ module.exports = function (_Item) {
 }(Item);
 
 /***/ }),
-/* 109 */
+/* 110 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -41293,7 +41463,7 @@ module.exports = function (_Item) {
 }(Item);
 
 /***/ }),
-/* 110 */
+/* 111 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -41313,7 +41483,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var Item = __webpack_require__(16);
 var Utils = __webpack_require__(4);
-var User = __webpack_require__(111);
+var User = __webpack_require__(112);
 
 module.exports = function (_Item) {
   _inherits(Users, _Item);
@@ -41419,7 +41589,7 @@ module.exports = function (_Item) {
 }(Item);
 
 /***/ }),
-/* 111 */
+/* 112 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -41534,7 +41704,7 @@ module.exports = function (_Item) {
 }(Item);
 
 /***/ }),
-/* 112 */
+/* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -41550,9 +41720,10 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Manager = __webpack_require__(47);
-var Conference = __webpack_require__(48);
-var Command = __webpack_require__(49);
+var Manager = __webpack_require__(48);
+var Information = __webpack_require__(51);
+var Conference = __webpack_require__(49);
+var Command = __webpack_require__(50);
 var Utils = __webpack_require__(4);
 var SIP = __webpack_require__(8);
 var debug = SIP.debug('Apollo:ConferenceManager');
@@ -41600,22 +41771,36 @@ module.exports = function (_Manager) {
       return this.addConference(conferenceInfo).catch(function (e) {
         debug('add conference failed. error: %o', e);
         throw e;
-      }).then(function (info) {
-        // TBD
-        var _info$conferenceInfo = info['conference-info'],
-            entity = _info$conferenceInfo.entity,
-            focusUri = _info$conferenceInfo.focusUri; // TODO
-
+      }).then(function (xml) {
         var conference = new Conference();
+        var information = Conference.parseInformation(xml);
 
         conference.ua = _this2.ua;
-        conference.entity = entity;
-        conference.focusUri = focusUri;
+        conference.entity = information.entity;
+
+        var uris = information.description.confUris;
+
+        uris = Utils.arrayfy(uris['entry']);
+
+        uris.forEach(function (entry) {
+          var purpose = entry.purpose,
+              uri = entry.uri;
+
+
+          switch (purpose) {
+            case 'focus':
+              conference.focusChannel.target = uri;
+              break;
+            case 'audio-video':
+              conference.mediaChannel.target = uri;
+              break;
+            case 'applicationsharing':
+              conference.shareChannel.target = uri;
+              break;
+          }
+        });
 
         return Promise.resolve(conference);
-      }).catch(function (e) {
-        debug('connect conference failed. error: %o', e);
-        throw e;
       });
     }
   }, {

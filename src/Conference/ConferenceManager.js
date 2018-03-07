@@ -1,4 +1,5 @@
 const Manager = require('../Manager/Manager');
+const Information = require('./Info/Information');
 const Conference = require('./Conference');
 const Command = require('../Command/Command');
 const Utils = require('../Base/Utils');
@@ -72,23 +73,37 @@ module.exports = class ConferenceManager extends Manager
         debug('add conference failed. error: %o', e);
         throw e;
       })
-      .then((info) => 
+      .then((xml) => 
       {
-        // TBD
-        const { entity, focusUri } = info['conference-info']; // TODO
-
         const conference = new Conference();
+        const information = Conference.parseInformation(xml);
 
         conference.ua = this.ua;
-        conference.entity = entity;
-        conference.focusUri = focusUri;
+        conference.entity = information.entity;
+
+        let uris = information.description.confUris;
+
+        uris = Utils.arrayfy(uris['entry']);
+
+        uris.forEach(function(entry)
+        {
+          const { purpose, uri } = entry;
+
+          switch (purpose) 
+          {
+            case 'focus':
+              conference.focusChannel.target = uri;
+              break;
+            case 'audio-video':
+              conference.mediaChannel.target = uri;
+              break;
+            case 'applicationsharing':
+              conference.shareChannel.target = uri;
+              break;
+          }
+        });  
 
         return Promise.resolve(conference);
-      })
-      .catch((e) => 
-      {
-        debug('connect conference failed. error: %o', e);
-        throw e;
       });
   }
 

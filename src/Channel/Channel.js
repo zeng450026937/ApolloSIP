@@ -1,4 +1,5 @@
 const EventEmitter = require('events').EventEmitter;
+const Error = require('../Error/Error');
 const Utils = require('../Base/Utils');
 const SIP = require('../Base/SIP');
 
@@ -201,15 +202,17 @@ module.exports = class Channel extends EventEmitter
 
     this.session = null;
 
-    this.emit('ended', data);
+    this.emit('ended', new Error.FreeSwitchError(data));
   }
   _failed(data) 
   {
     debug('on failed: %s, cause: %s', data.originator, data.cause);
     
     this.session = null;
+
+    this._parseErrorCode(data);
     
-    this.emit('failed', data);
+    this.emit('failed', new Error.FreeSwitchError(data));
   }
   _newDTMF(data) 
   {
