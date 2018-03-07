@@ -80,6 +80,14 @@ module.exports = class MediaChannel extends Channel
   {
     return this._media;
   }
+  set media(media)
+  {
+    if (this._media !== media)
+    {
+      this._media = media;
+      this.emit('mediaChanged', media);
+    }
+  }
 
   get statistics()
   {

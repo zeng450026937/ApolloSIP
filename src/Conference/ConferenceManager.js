@@ -1,5 +1,4 @@
 const Manager = require('../Manager/Manager');
-const Information = require('./Info/Information');
 const Conference = require('./Conference');
 const Command = require('../Command/Command');
 const Utils = require('../Base/Utils');
@@ -31,6 +30,7 @@ module.exports = class ConferenceManager extends Manager
     this.on('uaChanged', (ua) => 
     {
       this.from = ua.get('uri');
+      this.factoryUri = ua.get('conferenceFactoryUri');
     });
   }
 
