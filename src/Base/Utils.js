@@ -13,16 +13,19 @@ exports.xmlify = (obj) =>
 exports.objectify = (xml) => 
 {
   return xmlparser.parse(xml, {
-    attrPrefix            : '@',
-    attrNodeName          : false,
-    textNodeName          : '#text',
-    ignoreNonTextNodeAttr : false,
-    ignoreTextNodeAttr    : false,
-    ignoreNameSpace       : false,
-    ignoreRootElement     : false,
-    textNodeConversion    : true,
-    textAttrConversion    : false,
-    arrayMode             : false
+    attributeNamePrefix    : '@',
+    attrNodeName           : false,
+    textNodeName           : '#text',
+    ignoreAttributes       : false,
+    ignoreNameSpace        : false,
+    allowBooleanAttributes : false, // a tag can have attributes without any value
+    parseNodeValue         : true,
+    parseAttributeValue    : false,
+    arrayMode              : false,
+    trimValues             : true, // Trim string values of tag and attributes 
+    decodeHTMLchar         : false,
+    cdataTagName           : false,
+    cdataPositionChar      : '\\c'
   });
 };
 

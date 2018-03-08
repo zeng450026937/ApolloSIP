@@ -24,23 +24,23 @@
     "url": ""
   },
   "dependencies": {
-    "bowser": "^1.9.1",
+    "bowser": "^1.9.2",
     "debug": "^3.1.0",
+    "fast-xml-parser": "^3.3.0",
+    "fecha": "^2.3.3",
     "sdp-transform": "file:./sdp-transform",
-    "webrtc-adapter": "^6.0.4",
-    "xmlbuilder": "^9.0.4",
-    "fast-xml-parser": "^2.9.0",
-    "fecha": "^2.3.2"
+    "webrtc-adapter": "^6.1.1",
+    "xmlbuilder": "^9.0.7"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
-    "babel-loader": "^7.1.2",
+    "babel-loader": "^7.1.4",
     "babel-preset-env": "^1.6.1",
-    "eslint": "^4.15.0",
+    "eslint": "^4.18.2",
     "pegjs": "^0.10.0",
     "pegjs-loader": "^0.5.4",
-    "uglifyjs-webpack-plugin": "^1.1.6",
-    "webpack": "^3.10.0"
+    "webpack": "^4.1.1",
+    "webpack-cli": "^2.0.10"
   },
   "scripts": {
     "build": "webpack --progress"

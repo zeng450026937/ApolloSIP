@@ -1,15 +1,13 @@
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const webpack = require('webpack');
 
 const pkg = require('./package.json');
 const year = new Date().getFullYear();
 const banner = `Apollo version ${pkg.version}\n
-Copyright (c) 2018-${year} Yealink Networks, Inc\n\n`;
+Copyright (c) 2018-${year} Yealink Networks, Inc\n`;
 
 module.exports = {
   entry : {
-    'apollosip'     : `${__dirname }/src/ApolloSip.js`,
-    'apollosip.min' : `${__dirname }/src/ApolloSip.js`
+    'apollosip' : `${__dirname }/src/ApolloSip.js`
   },
   output : {
     path          : `${__dirname }/dist`,
@@ -17,6 +15,7 @@ module.exports = {
     library       : 'ApolloSip',
     libraryTarget : 'umd'
   },
+  mode   : 'development',
   module : {
     rules : [
       {
@@ -37,14 +36,6 @@ module.exports = {
     ]
   },
   plugins : [
-    new UglifyJSPlugin({
-      test          : /^apollo\.min\.js$/,
-      uglifyOptions : {
-        output : {
-          ascii_only : true
-        }
-      }
-    }),
     new webpack.BannerPlugin({
       banner : banner
     })
