@@ -9,13 +9,13 @@ module.exports = class UA extends SIP.UA
   constructor(configuration)
   {  
     const serverUrl = Url.parse(configuration.server);
-    const outbound = configuration.outbound;
+    const outbound = SIP.Utils.isEmpty(configuration.outbound)?false:true;
 
     const socketUrl = Url.format({
       protocol : serverUrl.protocol,
       hostname : serverUrl.hostname,
       port     : serverUrl.port,
-      pathname : serverUrl.pathname + outbound,
+      pathname : outbound?serverUrl.pathname + configuration.outbound:serverUrl.pathname,
       slashes  : true
     });
 
@@ -28,6 +28,7 @@ module.exports = class UA extends SIP.UA
     Object.assign(this._configuration, {
       // common config
       server               : undefined,
+      outbound             : undefined,
       debug                : true,
       // peer connection config
       iceServers           : undefined, // [ { urls: 'stun:stun.l.google.com:19302' } ]
@@ -52,6 +53,7 @@ module.exports = class UA extends SIP.UA
 
     const optional = [
       'server',
+      'outbound',
       'debug',
       'iceServers',
       'iceTransportPolicy',
@@ -212,6 +214,7 @@ module.exports = class UA extends SIP.UA
       let contact = null;
       let socketUrl = '';
       const sockets = [];
+      const outbound = SIP.Utils.isEmpty(this._configuration.outbound)?false:true;
 
       const serverUrl = Url.parse(this._configuration.server);
 
@@ -219,12 +222,13 @@ module.exports = class UA extends SIP.UA
       {
         contact = response.parseHeader('contact', contacts);
         socketUrl = Url.format({
-          pathname : serverUrl.pathname + contact.uri.host,
-          hostname : serverUrl.hostname,
+          pathname : outbound?serverUrl.pathname + contact.uri.host:'',
+          hostname : outbound?serverUrl.hostname:contact.uri.host,
           port     : serverUrl.port,
           protocol : serverUrl.protocol,
           slashes  : true
         });
+
         const socket = new SIP.WebSocketInterface(socketUrl.toString());
 
         sockets.push({ socket: socket });
