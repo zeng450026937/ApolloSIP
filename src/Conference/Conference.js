@@ -751,9 +751,6 @@ module.exports = class Conference extends EventEmitter
 
     this.information.clear();
 
-    // TODO
-    // filter normal ended and set error ?
-
     this.emit('disconnected', data);
   }
 
