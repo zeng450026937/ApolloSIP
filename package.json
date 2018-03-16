@@ -2,7 +2,7 @@
   "name": "apollosip",
   "title": "ApolloSip",
   "description": "The Javascript SIP library",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "homepage": "http://www.yealink.com.cn/",
   "author": "Yealink Inc.",
   "contributors": [
