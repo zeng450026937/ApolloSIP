@@ -1,10 +1,10 @@
-# ApolloSip
+# ApolloSIP
 
 The SIP library used in Apollo Project.
 
 ## Install
 
-  git clone git@gitlab.leucs.com:server-app/ApolloSip.git
+  git clone git@gitlab.leucs.com:server-app/ApolloSIP.git
 
 ## Build
 

@@ -6,7 +6,7 @@ const CallManager = require('./Call/CallManager');
 const Conference = require('./Conference/Conference');
 const ConferenceManager = require('./Conference/ConferenceManager');
 
-const Apollo = {
+const ApolloSIP = {
   SIP               : SIP,
   Utils             : Utils,
   UA                : UA,
@@ -17,4 +17,4 @@ const Apollo = {
   debug             : SIP.debug
 };
 
-module.exports = Apollo;
+module.exports = ApolloSIP;
