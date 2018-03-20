@@ -5,10 +5,7 @@ const year = new Date().getFullYear();
 const banner = `Apollo version ${pkg.version}\n
 Copyright (c) 2018-${year} Yealink Networks, Inc\n`;
 
-module.exports = {
-  entry : {
-    'apollosip' : `${__dirname }/src/ApolloSIP.js`
-  },
+const baseConfig = {
   output : {
     path          : `${__dirname }/dist`,
     filename      : '[name].js',
@@ -41,3 +38,17 @@ module.exports = {
     })
   ]
 };
+const webConfig = Object.assign({}, baseConfig, { 
+  target : 'web',
+  entry  : {
+    'apollosip' : `${__dirname }/src/ApolloSIP.js`
+  }
+});
+const electronConfig = Object.assign({}, baseConfig, { 
+  target : 'electron-renderer',
+  entry  : {
+    'apollosip-renderer' : `${__dirname }/src/ApolloSIP.js`
+  }
+});
+
+module.exports = [ webConfig, electronConfig ];

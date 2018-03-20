@@ -8,7 +8,7 @@ The SIP library used in Apollo Project.
 
 ## Build
 
-  npm install && npm run build
+  yarn && yarn compile
 
 ## Interface
 

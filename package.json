@@ -1,6 +1,6 @@
 {
   "name": "apollosip",
-  "title": "ApolloSip",
+  "title": "ApolloSIP",
   "description": "The Javascript SIP library",
   "version": "0.1.0",
   "homepage": "http://www.yealink.com.cn/",
@@ -9,6 +9,9 @@
     "ito"
   ],
   "main": "dist/apollosip.js",
+  "browser": {
+    "ws": "./lib/WebSocket.js"
+  },
   "keywords": [
     "sip",
     "websocket",
@@ -30,6 +33,7 @@
     "fecha": "^2.3.3",
     "sdp-transform": "file:./sdp-transform",
     "webrtc-adapter": "^6.1.3",
+    "ws": "^5.1.0",
     "xmlbuilder": "^9.0.7"
   },
   "devDependencies": {
@@ -40,9 +44,9 @@
     "pegjs": "^0.10.0",
     "pegjs-loader": "^0.5.4",
     "webpack": "^4.1.1",
-    "webpack-cli": "^2.0.11"
+    "webpack-cli": "^2.0.12"
   },
   "scripts": {
-    "build": "webpack --progress"
+    "compile": "webpack --progress"
   }
 }

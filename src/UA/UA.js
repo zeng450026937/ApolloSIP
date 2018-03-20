@@ -19,7 +19,7 @@ module.exports = class UA extends SIP.UA
       slashes  : true
     });
 
-    const socket = new SIP.WebSocketInterface(socketUrl);
+    const socket = new SIP.WebSocketInterface(socketUrl, configuration.socketOptions);
 
     configuration.sockets = [ socket ];
 
