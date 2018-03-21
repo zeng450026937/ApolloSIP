@@ -1,20 +1,13 @@
-const SIP = require('./Base/SIP');
-const Utils = require('./Base/Utils');
-const UA = require('./UA/UA');
-const Call = require('./Call/Call');
-const CallManager = require('./Call/CallManager');
-const Conference = require('./Conference/Conference');
-const ConferenceManager = require('./Conference/ConferenceManager');
 
 const ApolloSIP = {
-  SIP               : SIP,
-  Utils             : Utils,
-  UA                : UA,
-  Call              : Call,
-  CallManager       : CallManager,
-  Conference        : Conference,
-  ConferenceManager : ConferenceManager,
-  debug             : SIP.debug
+  SIP               : require('../lib/SIP'),
+  Utils             : require('./Base/Utils'),
+  UA                : require('./UA/UA'),
+  Call              : require('./Call/Call'),
+  CallManager       : require('./Call/CallManager'),
+  Conference        : require('./Conference/Conference'),
+  ConferenceManager : require('./Conference/ConferenceManager'),
+  debug             : require('debug')
 };
 
 module.exports = ApolloSIP;

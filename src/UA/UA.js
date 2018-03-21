@@ -1,40 +1,19 @@
 const SIP = require('../Base/SIP');
 const Url = require('url');
+const SocketInterface = require('../Socket/SocketInterface');
 const ApolloControl = require('./ApolloControl');
 const ApolloProvision = require('./ApolloProvision');
 const debug = SIP.debug('Apollo:UA');
 
 module.exports = class UA extends SIP.UA
 {
-  static GetSocketUrl(server, proxy)
-  {
-    let socketUrl;
-  
-    if (!SIP.Utils.isEmpty(proxy))
-    {
-      const proxyUrl = Url.parse(proxy);
-      const serverUrl = Url.parse(server);
-  
-      socketUrl = Url.format({
-        protocol : proxyUrl.protocol,
-        hostname : proxyUrl.hostname,
-        port     : proxyUrl.port,
-        pathname : proxyUrl.pathname + serverUrl.hostname,
-        slashes  : true
-      });
-    }
-    else
-    {
-      socketUrl = Url.parse(server);
-    }
-  
-    return socketUrl;
-  }
-
   constructor(configuration)
   {  
-    const socketUrl = UA.GetSocketUrl(configuration.server, configuration.proxy);
-    const socket = new SIP.WebSocketInterface(socketUrl, configuration.socketOptions);
+    const socket = SocketInterface.Create({
+      server        : configuration.server,
+      socketOptions : configuration.socketOptions,
+      proxy         : configuration.proxy
+    });
 
     configuration.sockets = [ socket ];
 
@@ -229,29 +208,24 @@ module.exports = class UA extends SIP.UA
       const response = data.response;
       let contacts = response.getHeaders('contact').length;
       let contact = null;
-      let socketUrl = '';
       const serverUrl = Url.parse(this._configuration.server);
       const sockets = [];
 
       while (contacts--) 
       {
         contact = response.parseHeader('contact', contacts);
-        const url = Url.format({
+        const server = Url.format({
           hostname : contact.uri.host,
           port     : serverUrl.port,
           protocol : serverUrl.protocol,
           slashes  : true
         });
 
-        socketUrl = UA.GetSocketUrl(
-          url,
-          this._configuration.proxy
-        );
-
-        const socket = new SIP.WebSocketInterface(
-          socketUrl.toString(),
-          this._configuration.socketOptions
-        );
+        const socket = SocketInterface.Create({
+          server        : server,
+          socketOptions : this._configuration.socketOptions,
+          proxy         : this._configuration.proxy
+        });
 
         const weight = Number.parseFloat(contact.getParam('q'));
 

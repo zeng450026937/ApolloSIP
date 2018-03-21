@@ -44,6 +44,7 @@ const webConfig = Object.assign({}, baseConfig, {
     'apollosip' : `${__dirname }/src/ApolloSIP.js`
   }
 });
+
 const electronConfig = Object.assign({}, baseConfig, { 
   target : 'electron-renderer',
   entry  : {
@@ -51,4 +52,4 @@ const electronConfig = Object.assign({}, baseConfig, {
   }
 });
 
-module.exports = [ webConfig, electronConfig ];
+module.exports = [ electronConfig, webConfig ];

@@ -10,8 +10,7 @@
   ],
   "main": "dist/apollosip.js",
   "browser": {
-    "ws": "./lib/WebSocket.js",
-    "./src/UA/UA.js": "./src/UA/UA.socketio.js"
+    "ws": "./lib/WebSocket.js"
   },
   "keywords": [
     "sip",
