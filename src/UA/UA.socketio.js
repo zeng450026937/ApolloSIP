@@ -6,35 +6,14 @@ const debug = SIP.debug('Apollo:UA');
 
 module.exports = class UA extends SIP.UA
 {
-  static GetSocketUrl(server, proxy)
-  {
-    let socketUrl;
-  
-    if (!SIP.Utils.isEmpty(proxy))
-    {
-      const proxyUrl = Url.parse(proxy);
-      const serverUrl = Url.parse(server);
-  
-      socketUrl = Url.format({
-        protocol : proxyUrl.protocol,
-        hostname : proxyUrl.hostname,
-        port     : proxyUrl.port,
-        pathname : proxyUrl.pathname + serverUrl.hostname,
-        slashes  : true
-      });
-    }
-    else
-    {
-      socketUrl = Url.parse(server);
-    }
-  
-    return socketUrl;
-  }
-
   constructor(configuration)
   {  
-    const socketUrl = UA.GetSocketUrl(configuration.server, configuration.proxy);
-    const socket = new SIP.WebSocketInterface(socketUrl, configuration.socketOptions);
+    configuration.socketOptions.query = `fsaddr=${Url.parse(configuration.server).hostname}`;
+
+    const socket = new SIP.SocketIOInterface(
+      configuration.proxy,
+      configuration.socketOptions
+    );
 
     configuration.sockets = [ socket ];
 
@@ -229,33 +208,21 @@ module.exports = class UA extends SIP.UA
       const response = data.response;
       let contacts = response.getHeaders('contact').length;
       let contact = null;
-      let socketUrl = '';
-      const serverUrl = Url.parse(this._configuration.server);
       const sockets = [];
 
       while (contacts--) 
       {
+        const socketOptions = Object.assign({}, this._configuration.socketOptions);
+
         contact = response.parseHeader('contact', contacts);
-        const url = Url.format({
-          hostname : contact.uri.host,
-          port     : serverUrl.port,
-          protocol : serverUrl.protocol,
-          slashes  : true
-        });
+        socketOptions.query = `fsaddr=${contact.uri.host}`;
 
-        socketUrl = UA.GetSocketUrl(
-          url,
-          this._configuration.proxy
+        const socket = new SIP.SocketIOInterface(
+          this._configuration.proxy,
+          socketOptions
         );
 
-        const socket = new SIP.WebSocketInterface(
-          socketUrl.toString(),
-          this._configuration.socketOptions
-        );
-
-        const weight = Number.parseFloat(contact.getParam('q'));
-
-        sockets.push({ socket: socket, weight: weight });
+        sockets.push({ socket: socket });
       }
 
       this.stop();

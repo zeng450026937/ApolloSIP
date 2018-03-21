@@ -115,7 +115,7 @@ module.exports = class Information extends EventEmitter
     switch (profile) 
     {
       case 'default':
-        sharePermission = user.roles.permission === 'presenter'?true:false;
+        sharePermission = true;
         break;
       case 'demonstrator':
         sharePermission = user.roles.demostate === 'demonstrator'?true:
