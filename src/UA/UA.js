@@ -1,5 +1,5 @@
 const SIP = require('../Base/SIP');
-const Url = require('url');
+const URL = require('url');
 const SocketInterface = require('../Socket/SocketInterface');
 const ApolloControl = require('./ApolloControl');
 const ApolloProvision = require('./ApolloProvision');
@@ -9,13 +9,21 @@ module.exports = class UA extends SIP.UA
 {
   constructor(configuration)
   {  
-    const socket = SocketInterface.Create({
-      server        : configuration.server,
-      socketOptions : configuration.socketOptions,
-      proxy         : configuration.proxy
-    });
+    if (!Array.isArray(configuration.server))
+    {
+      configuration.server = [ configuration.server ];
+    }
 
-    configuration.sockets = [ socket ];
+    configuration.server.forEach(function(s)
+    {
+      const socket = SocketInterface.Create({
+        server        : s,
+        socketOptions : configuration.socketOptions,
+        proxy         : configuration.proxy
+      });
+  
+      configuration.sockets = [ socket ];
+    });
 
     super(configuration);
 
@@ -208,13 +216,13 @@ module.exports = class UA extends SIP.UA
       const response = data.response;
       let contacts = response.getHeaders('contact').length;
       let contact = null;
-      const serverUrl = Url.parse(this._configuration.server);
+      const serverUrl = URL.parse(this._configuration.server[0]);
       const sockets = [];
 
       while (contacts--) 
       {
         contact = response.parseHeader('contact', contacts);
-        const server = Url.format({
+        const server = URL.format({
           hostname : contact.uri.host,
           port     : serverUrl.port,
           protocol : serverUrl.protocol,
@@ -292,7 +300,7 @@ module.exports = class UA extends SIP.UA
             const { Server, UDPPort, Username, Password } = server;
 
             iceServers.push({
-              urls : Url.format({
+              urls : URL.format({
                 hostname : Server,
                 port     : UDPPort,
                 protocol : Username ? 'turn' : 'stun',

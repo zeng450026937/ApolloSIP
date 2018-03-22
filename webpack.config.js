@@ -41,14 +41,14 @@ const baseConfig = {
 const webConfig = Object.assign({}, baseConfig, { 
   target : 'web',
   entry  : {
-    'apollosip' : `${__dirname }/src/ApolloSIP.js`
+    'apollosip-web' : `${__dirname }/src/ApolloSIP.js`
   }
 });
 
 const electronConfig = Object.assign({}, baseConfig, { 
   target : 'electron-renderer',
   entry  : {
-    'apollosip-renderer' : `${__dirname }/src/ApolloSIP.js`
+    'apollosip' : `${__dirname }/src/ApolloSIP.js`
   }
 });
 

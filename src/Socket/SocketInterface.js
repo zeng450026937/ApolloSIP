@@ -5,8 +5,11 @@ module.exports = class SocketInterface
 {
   static Create({ server, socketOptions, proxy })
   {
-    const serverUrl = Url.parse(server);
-    const proxyUrl = Url.parse(proxy);
+    const serverUrl = Url.parse(server || '');
+    const proxyUrl = Url.parse(proxy || '');
+
+    serverUrl.pathname = serverUrl.pathname || '/';
+    proxyUrl.pathname = proxyUrl.pathname || '/';
 
     let socketUrl;
     let socketInterface;

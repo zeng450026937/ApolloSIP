@@ -209,8 +209,6 @@ module.exports = class Channel extends EventEmitter
     debug('on failed: %s, cause: %s', data.originator, data.cause);
     
     this.session = null;
-
-    this._parseErrorCode(data);
     
     this.emit('failed', new Error.FreeSwitchError(data));
   }
