@@ -831,7 +831,7 @@ module.exports = class Conference extends EventEmitter
 
     session.once('failed', (data) =>
     {
-      debug('Redirect failed. cause: %s', data.cause);
+      debug('Invite failed. cause: %s', data.cause);
 
       const message = data.message;
 

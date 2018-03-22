@@ -5,31 +5,52 @@ const ApolloControl = require('./ApolloControl');
 const ApolloProvision = require('./ApolloProvision');
 const debug = SIP.debug('Apollo:UA');
 
-module.exports = class UA extends SIP.UA
+module.exports = class UA extends SIP.UA 
 {
-  constructor(configuration)
-  {  
-    if (!Array.isArray(configuration.server))
+  constructor(configuration) 
+  {
+    const _sockets = [];
+
+    if (!Array.isArray(configuration.servers)) 
     {
-      configuration.server = [ configuration.server ];
+      configuration.servers = [ configuration.servers ];
     }
 
-    configuration.server.forEach(function(s)
+    for (const s of configuration.servers)
     {
-      const socket = SocketInterface.Create({
-        server        : s,
-        socketOptions : configuration.socketOptions,
-        proxy         : configuration.proxy
-      });
-  
-      configuration.sockets = [ socket ];
-    });
+      let url = s;
+
+      if (Object.prototype.hasOwnProperty.call(s, 'url'))
+      {
+        url = s.url;
+
+        const socket = SocketInterface.Create({
+          server        : url,
+          socketOptions : configuration.socketOptions,
+          proxy         : configuration.proxy
+        });
+
+        _sockets.push({ socket: socket, weight: s.weight });
+      }
+      else
+      {
+        const socket = SocketInterface.Create({
+          server        : url,
+          socketOptions : configuration.socketOptions,
+          proxy         : configuration.proxy
+        });
+
+        _sockets.push({ socket: socket });
+      }
+    }
+
+    configuration.sockets = _sockets;
 
     super(configuration);
 
     Object.assign(this._configuration, {
       // common config
-      server               : undefined,
+      servers              : undefined,
       proxy                : undefined,
       socketOptions        : undefined,
       debug                : true,
@@ -55,7 +76,7 @@ module.exports = class UA extends SIP.UA
     });
 
     const optional = [
-      'server',
+      'servers',
       'proxy',
       'socketOptions',
       'debug',
@@ -66,16 +87,16 @@ module.exports = class UA extends SIP.UA
       'googIPv6',
       'offerToReceiveAudio',
       'offerToReceiveVideo',
-      'anonymous'          
+      'anonymous'
     ];
 
-    for (const parameter of optional)
+    for (const parameter of optional) 
     {
-      if (configuration.hasOwnProperty(parameter))
+      if (configuration.hasOwnProperty(parameter)) 
       {
         const value = configuration[parameter];
 
-        if (SIP.Utils.isEmpty(value))
+        if (SIP.Utils.isEmpty(value)) 
         {
           continue;
         }
@@ -84,7 +105,7 @@ module.exports = class UA extends SIP.UA
       }
     }
 
-    if (this._configuration.debug)
+    if (this._configuration.debug) 
     {
       SIP.debug.enable('SIP:* Apollo:*');
     }
@@ -93,9 +114,9 @@ module.exports = class UA extends SIP.UA
     this._apolloProvision = null;
   }
 
-  get(parameter)
+  get(parameter) 
   {
-    switch (parameter)
+    switch (parameter) 
     {
       case 'iceServers':
         return this._configuration.iceServers;
@@ -105,10 +126,10 @@ module.exports = class UA extends SIP.UA
 
       case 'iceCandidatePoolSize':
         return this._configuration.iceCandidatePoolSize;
-        
+
       case 'DtlsSrtpKeyAgreement':
         return this._configuration.DtlsSrtpKeyAgreement;
-        
+
       case 'googIPv6':
         return this._configuration.googIPv6;
 
@@ -117,7 +138,7 @@ module.exports = class UA extends SIP.UA
 
       case 'offerToReceiveVideo':
         return this._configuration.offerToReceiveVideo;
-        
+
       case 'conferenceFactoryUri':
         return this._configuration.conferenceFactoryUri;
 
@@ -126,7 +147,7 @@ module.exports = class UA extends SIP.UA
 
       case 'negotiateUrl':
         return this._configuration.negotiateUrl;
-        
+
       case 'phonebookUrl':
         return this._configuration.phonebookUrl;
 
@@ -141,9 +162,9 @@ module.exports = class UA extends SIP.UA
     }
   }
 
-  set(parameter, value)
+  set(parameter, value) 
   {
-    switch (parameter)
+    switch (parameter) 
     {
       case 'iceServers':
         this._configuration.iceServers = value;
@@ -184,7 +205,7 @@ module.exports = class UA extends SIP.UA
       case 'negotiateUrl':
         this._configuration.negotiateUrl = value;
         break;
-        
+
       case 'phonebookUrl':
         this._configuration.phonebookUrl = value;
         break;
@@ -198,25 +219,25 @@ module.exports = class UA extends SIP.UA
     }
   }
 
-  registered(data)
+  registered(data) 
   {
     super.registered(data);
 
     this.subscribeApolloService();
   }
 
-  registrationFailed(data)
+  registrationFailed(data) 
   {
     debug(`registrationFailed: ${data.cause}`);
 
-    if (data.cause && data.cause === SIP.C.causes.REDIRECTED)
+    if (data.cause && data.cause === SIP.C.causes.REDIRECTED) 
     {
       debug('Try redirect');
 
       const response = data.response;
       let contacts = response.getHeaders('contact').length;
       let contact = null;
-      const serverUrl = URL.parse(this._configuration.server[0]);
+      const transportUrl = URL.parse(this._transport.url);
       const sockets = [];
 
       while (contacts--) 
@@ -224,8 +245,8 @@ module.exports = class UA extends SIP.UA
         contact = response.parseHeader('contact', contacts);
         const server = URL.format({
           hostname : contact.uri.host,
-          port     : serverUrl.port,
-          protocol : serverUrl.protocol,
+          port     : transportUrl.port || contact.uri.port,
+          protocol : transportUrl.protocol,
           slashes  : true
         });
 
@@ -237,24 +258,27 @@ module.exports = class UA extends SIP.UA
 
         const weight = Number.parseFloat(contact.getParam('q'));
 
-        sockets.push({ socket: socket, weight: weight });
+        sockets.push({
+          socket : socket,
+          weight : weight
+        });
       }
 
       this.stop();
-      this.once('disconnected', () =>
+      this.once('disconnected', () => 
       {
         this._transport._setSocket(sockets);
         this._transport._getSocket();
         this.start();
       });
     }
-    else
+    else 
     {
       super.registrationFailed(data);
     }
   }
 
-  subscribeApolloService()
+  subscribeApolloService() 
   {
     // subscribe apollo control
     if (!this._apolloControl) 
@@ -297,7 +321,12 @@ module.exports = class UA extends SIP.UA
 
           for (const server of servers) 
           {
-            const { Server, UDPPort, Username, Password } = server;
+            const {
+              Server,
+              UDPPort,
+              Username,
+              Password
+            } = server;
 
             iceServers.push({
               urls : URL.format({
@@ -337,7 +366,7 @@ module.exports = class UA extends SIP.UA
           if (configuration.hasOwnProperty(attr)) 
           {
             const value = configuration[attr];
-            
+
             if (attr === 'phonebook-url') 
             {
               const phonebookUrl = value['@url'];
