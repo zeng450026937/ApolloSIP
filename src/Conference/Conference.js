@@ -274,16 +274,22 @@ module.exports = class Conference extends EventEmitter
         this.mediaChannel.target = targets[0];
         this.mediaChannel.connect();
 
-        this.mediaChannel.once('confirmed', () =>
-        {
-          this.entity = this.mediaChannel.entity;
-          this.focusChannel.target = this.mediaChannel.focusUri;
-          this.connect();
-        });
-        this.mediaChannel.once('failed', (error) =>
-        {
-          this.onFailed(error);
-        });
+        const listeners = {
+          'confirmed' : () => 
+          {
+            Utils.removeEventHandlers(this.mediaChannel, listeners);
+            this.entity = this.mediaChannel.entity;
+            this.focusChannel.target = this.mediaChannel.focusUri;
+            this.connect();
+          },
+          'failed' : (error) => 
+          {
+            Utils.removeEventHandlers(this.mediaChannel, listeners);
+            this.onFailed(error);
+          }
+        };
+
+        Utils.setupEventHandlers(this.mediaChannel, listeners);
 
         return Promise.resolve();
       })
@@ -325,6 +331,8 @@ module.exports = class Conference extends EventEmitter
     this.focusChannel.disconnect();
     this.mediaChannel.disconnect();
     this.shareChannel.disconnect();
+    // reset error
+    this._error = null;
   }
 
   parseInformation(xml)
