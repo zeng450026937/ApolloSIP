@@ -37,6 +37,7 @@ module.exports = class Channel extends EventEmitter
       'refer'                                     : this._refer.bind(this),
       'replaces'                                  : this._replaces.bind(this),
       'sdp'                                       : this._sdp.bind(this),
+      'icecandidate'                              : this._icecandidate.bind(this),
       'getusermediafailed'                        : this._getusermediafailed.bind(this),
       'peerconnection:createofferfailed'          : this._createofferfailed.bind(this),
       'peerconnection:createanswerfailed'         : this._createanswerfailed.bind(this),
@@ -289,6 +290,12 @@ module.exports = class Channel extends EventEmitter
     debug('on sdp: %s, type: %s', data.originator, data.type);
     
     this.emit('sdp', data);
+  }
+  _icecandidate(data)
+  {
+    debug('on icecandidate: %o', data.candidate);
+
+    this.emit('icecandidate', data);
   }
   _getusermediafailed(error) 
   {

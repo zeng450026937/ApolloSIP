@@ -35,6 +35,8 @@ module.exports = class MediaChannel extends Channel
 
     this._local_ssrcs = [];
     this._remote_ssrcs = [];
+
+    this._iceTimerOut = null;
   }
 
   get type()
@@ -429,16 +431,6 @@ module.exports = class MediaChannel extends Channel
 
   _peerconnection(data)
   {
-    data.peerconnection.onicecandidate = (event) =>
-    {
-      const candidate = event.candidate;
-
-      if (candidate)
-      {
-        debug('peerconnection:onicecandidate: %o', candidate);
-      }
-    };
-
     data.peerconnection.onconnectionstatechange = (event) =>
     {
       debug('peerconnection:onconnectionstatechange : %s', data.peerconnection.connectionState);
@@ -583,6 +575,29 @@ module.exports = class MediaChannel extends Channel
     data.sdp = SDPTransform.write(sdp);
 
     super._sdp(data);
+  }
+
+  _icecandidate(data)
+  {
+    // data.candidate
+    // RTCIceCandidate instance as described in the W3C specification.
+
+    // data.ready
+    // Function to be executed by the event callback if candidate is
+    // the last one to be gathered prior to retrieve the local description.
+    if (this._iceTimerOut)
+    {
+      clearTimeout(this._iceTimerOut);
+    }
+    else
+    {
+      this._iceTimerOut = setTimeout(() =>
+      {
+        data.ready();
+      }, 1500);
+    }
+
+    super._icecandidate(data);
   }
 
   _newInfo(data) 
