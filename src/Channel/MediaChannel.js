@@ -588,14 +588,13 @@ module.exports = class MediaChannel extends Channel
     if (this._iceTimerOut)
     {
       clearTimeout(this._iceTimerOut);
+      this._iceTimerOut = null;
     }
-    else
+
+    this._iceTimerOut = setTimeout(() =>
     {
-      this._iceTimerOut = setTimeout(() =>
-      {
-        data.ready();
-      }, 1500);
-    }
+      data.ready();
+    }, 1500);
 
     super._icecandidate(data);
   }
