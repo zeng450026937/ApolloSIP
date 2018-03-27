@@ -7,6 +7,9 @@ const View = require('./View');
 const Users = require('./Users');
 
 const debug = Debug('Apollo:Information');
+const warn = Debug('Apollo:Information:Warn');
+
+warn.log = console.warn.bind(console);
 
 module.exports = class Information extends EventEmitter
 {
@@ -70,7 +73,7 @@ module.exports = class Information extends EventEmitter
     }
     else if (this.entity !== info['@entity'])
     {
-      debug('entity unmatch!');
+      warn('Entity unmatch!');
       
       return;
     }
@@ -89,6 +92,8 @@ module.exports = class Information extends EventEmitter
           this._deletedUpdate();
           break;
         default:
+          warn('Missing state. Fallback to partical update.');
+          this._particalUpdate(info);
           break;
       }
 
@@ -119,7 +124,8 @@ module.exports = class Information extends EventEmitter
         break;
       case 'demonstrator':
         sharePermission = user.roles.demostate === 'demonstrator'?true:
-          user.roles.permission === 'attendee'?false:true;
+          (user.roles.permission === 'presenter' || 
+           user.roles.permission === 'organizer')?true:false;
         break;
     }
 
