@@ -44,6 +44,16 @@ exports.arrayfy = (obj) =>
   return array;
 };
 
+exports.booleanify = (arg) =>
+{
+  if (typeof arg === 'string' && arg === 'false')
+  {
+    return false;
+  }
+
+  return Boolean(arg);
+};
+
 const _defer = exports.defer = () =>
 {
   const deferred = {};

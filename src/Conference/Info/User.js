@@ -12,6 +12,10 @@ module.exports = class User extends Item
   {
     return this.get('@entity');
   }
+  get accountType()
+  {
+    return this.get('account-type');
+  }
   get displayText()
   {
     return this.get('display-text');
@@ -20,9 +24,17 @@ module.exports = class User extends Item
   {
     return Utils.arrayfy(this.get('endpoint'));
   }
+  get ip()
+  {
+    return this.get('ip');
+  }
   get phone()
   {
     return this.get('phone');
+  }
+  get protocol()
+  {
+    return this.get('protocol');
   }
   get roles()
   {

@@ -50,9 +50,17 @@ module.exports = class Description extends Item
   {
     return this.get('conference-number');
   }
-  get conferenceType()
+  get conferenceNumberType()
   {
-    return this.get('conference-type');
+    return this.get('conference-number-type');
+  }
+  get hideOSD()
+  {
+    return Utils.booleanify(this.get('hide-osd'));
+  }
+  get interactiveBroadcastEnabled()
+  {
+    return Utils.booleanify(this.get('interactive-broadcast-enabled'));
   }
   get maximumUserCount()
   {

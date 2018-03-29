@@ -1,4 +1,5 @@
 const Item = require('./Item');
+const Utils = require('../../Base/Utils');
 
 module.exports = class State extends Item
 {
@@ -11,11 +12,15 @@ module.exports = class State extends Item
 
   get active()
   {
-    return this.get('active')==='false'?false:true;
+    return Utils.booleanify(this.get('active'));
+  }
+  get applicationSharing()
+  {
+    return Utils.booleanify(this.get('applicationsharing'));
   }
   get locked()
   {
-    return this.get('locked')==='false'?false:true;
+    return Utils.booleanify(this.get('locked'));
   }
 
 };
