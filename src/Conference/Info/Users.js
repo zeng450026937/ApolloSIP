@@ -28,14 +28,14 @@ module.exports = class Users extends Item
     return this._userList;
   }
 
-  get presenter()
+  get sharingUser()
   {
-    const presenter = this.userList.find(function(user) 
+    const sharingUser = this.userList.find(function(user) 
     {
-      return user.isPresenter();
+      return user.isSharing();
     });
 
-    return presenter;
+    return sharingUser;
   }
 
   get currentUser()
@@ -76,10 +76,13 @@ module.exports = class Users extends Item
 
     const list = Utils.arrayfy(this.get('user'));
 
+    // TODO
+    // we should use the previous object instead of create new one every time.
     this._userList = list.map(function(userInfo)
     {
       const user = new User(userInfo);
       const currentUserEntity = this._information.from;
+      const organizer = this._information.description.organizer;
 
       // setup user's attached properties.
       user.isCurrentUser = function() 
@@ -87,11 +90,9 @@ module.exports = class Users extends Item
         return this.entity === currentUserEntity;
       };
 
-      user.isPresenter = function()
+      user.isOrganizer = function()
       {
-        const shareMedia = user.getMedia('applicationsharing');
-
-        return shareMedia && shareMedia['status'] === 'sendonly';
+        return user.uid === organizer.uid;
       };
 
       return user;

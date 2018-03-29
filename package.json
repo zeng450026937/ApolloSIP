@@ -32,6 +32,7 @@
     "debug": "^3.1.0",
     "fast-xml-parser": "^3.3.3",
     "fecha": "^2.3.3",
+    "js-base64": "^2.4.3",
     "sdp-transform": "file:./sdp-transform",
     "socket.io-client": "^2.0.4",
     "webrtc-adapter": "^6.1.3",

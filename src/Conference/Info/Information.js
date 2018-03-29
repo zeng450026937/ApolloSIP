@@ -63,7 +63,22 @@ module.exports = class Information extends EventEmitter
 
   update(xml)
   {
-    const info = Utils.objectify(xml)['conference-info'];
+    let info;
+
+    if (typeof xml === 'string')
+    {
+      info = Utils.objectify(xml)['conference-info'];
+    }
+    else if (typeof xml === 'object')
+    {
+      info = xml['conference-info'];
+    }
+    else
+    {
+      warn('Only xml string or object is accepted.');
+
+      return;
+    }
 
     debug('update information: %o', info);
 

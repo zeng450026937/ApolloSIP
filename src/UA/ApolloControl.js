@@ -22,7 +22,7 @@ class ApolloControl extends EventEmitter
     this._target = ua.get('uri');
     this._expires = 3600;
     this._event = 'apollo-control';
-    this._contentType = 'application/conference-ctrl+xml';
+    this._contentType = 'application/apollo-ctrl+xml';
     this._extraHeaders = [ `Accept: ${this._contentType}` ];
     this._subscription = null;
   }

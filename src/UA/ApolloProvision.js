@@ -21,7 +21,7 @@ module.exports = class ApolloProvision extends EventEmitter
     this._target = ua.get('uri');
     this._expires = 3600;
     this._event = 'apollo-provisioning';
-    this._contentType = 'application/conference-provisioning+xml';
+    this._contentType = 'application/apollo-provisioning+xml';
     this._extraHeaders = [ `Accept: ${this._contentType}` ];
     this._subscription = null;
   }

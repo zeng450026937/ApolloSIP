@@ -593,8 +593,9 @@ module.exports = class MediaChannel extends Channel
 
     this._iceTimerOut = setTimeout(() =>
     {
+      debug('ICE gathering timeout.');
       data.ready();
-    }, 1500);
+    }, 2000);
 
     super._icecandidate(data);
   }

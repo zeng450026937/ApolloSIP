@@ -62,7 +62,7 @@ module.exports = class ConferenceManager extends Manager
 
   isAvariable()
   {
-    return super.isAvariable() && this.factoryUri;
+    return super.isAvariable() && (this.factoryUri?true:false);
   }
 
   createConference(conferenceInfo) 

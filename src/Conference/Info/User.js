@@ -77,7 +77,7 @@ module.exports = class User extends Item
     return list;
   }
 
-  // main-audio | main=video | applicationsharing
+  // main-audio | main-video | applicationsharing
   getMedia(label)
   {
     const media = this.mediaList.find(function(m)
@@ -86,6 +86,13 @@ module.exports = class User extends Item
     });
 
     return media;
+  }
+
+  isSharing()
+  {
+    const shareMedia = this.getMedia('applicationsharing');
+
+    return shareMedia && shareMedia['status'] === 'sendonly';
   }
 
 };

@@ -1,5 +1,6 @@
 const SIP = require('../Base/SIP');
 const URL = require('url');
+const Base64 = require('js-base64').Base64;
 const SocketInterface = require('../Socket/SocketInterface');
 const ApolloControl = require('./ApolloControl');
 const ApolloProvision = require('./ApolloProvision');
@@ -56,23 +57,26 @@ module.exports = class UA extends SIP.UA
       debug                : true,
       // peer connection config
       iceServers           : undefined, // [ { urls: 'stun:stun.l.google.com:19302' } ]
-      iceTransportPolicy   : 'all',
+      iceTransportPolicy   : 'all', // all | relay
       iceCandidatePoolSize : 0,
       // rtc config
       DtlsSrtpKeyAgreement : true,
       googIPv6             : false,
       // rtc offer/answer config
       // the number of audio streams to receive when creating an offer.
-      offerToReceiveAudio  : 1,
+      offerToReceiveAudio  : true,
       // the number of video streams to receive when creating an offer.
-      offerToReceiveVideo  : 1,
+      offerToReceiveVideo  : true,
       // call config
       anonymous            : false,
       // apollo service config
       conferenceFactoryUri : undefined,
       capabilities         : undefined,
       negotiateUrl         : undefined,
-      phonebookUrl         : undefined
+      phonebookUrl         : undefined,
+      autopUrl             : undefined,
+      endpointConfig       : undefined,
+      serverConfig         : undefined
     });
 
     const optional = [
@@ -327,16 +331,17 @@ module.exports = class UA extends SIP.UA
               Username,
               Password
             } = server;
+            const type = server['@name'] || 'stun';
 
             iceServers.push({
               urls : URL.format({
                 hostname : Server,
                 port     : UDPPort,
-                protocol : Username ? 'turn' : 'stun',
+                protocol : type.toLowerCase(),
                 slashes  : false
               }),
-              username   : Username,
-              credential : Password
+              username   : Base64.decode(Username),
+              credential : Base64.decode(Password)
             });
           }
           this.set('iceServers', iceServers);
@@ -382,6 +387,14 @@ module.exports = class UA extends SIP.UA
               this.set('negotiateUrl', negotiateUrl);
               this.emit('negotiateUrlUpdated', negotiateUrl);
               debug('negotiateUrlUpdated : %s', negotiateUrl);
+            }
+            if (attr === 'autop-url') 
+            {
+              const autopUrl = value['@url'];
+
+              this.set('autopUrl', autopUrl);
+              this.emit('autopUrlUpdated', autopUrl);
+              debug('autopUrlUpdated : %s', autopUrl);
             }
           }
         }
