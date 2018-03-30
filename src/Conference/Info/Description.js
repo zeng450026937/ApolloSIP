@@ -54,6 +54,10 @@ module.exports = class Description extends Item
   {
     return this.get('conference-number-type');
   }
+  get conferenceType()
+  {
+    return this.get('conference-type');
+  }
   get hideOSD()
   {
     return Utils.booleanify(this.get('hide-osd'));
