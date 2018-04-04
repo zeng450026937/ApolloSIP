@@ -24,6 +24,7 @@ const C = {
   SET_DEMONSTRATOR             : 'setDemonstrator',
   SET_TITLE                    : 'setTitle',
   CANCEL_TITLE                 : 'cancelTitle',
+  ADD_RTMP_USER                : 'addRtmpUser',
   ADD_RTMP_USER_BATCH          : 'addRtmpUserBatch',
   MODIFY_RTMP_ENDPOINT_MEDIA   : 'modifyRtmpEpMedia',
   HOLD_RTMP_USER               : 'holdRtmpUser',
@@ -38,31 +39,48 @@ const C = {
     ATTENDEE  : 'attendee',
     PRESENTER : 'presenter'
   },
-  DemoSTATUS : {
+  DemoStatus : {
     ON  : 'OnDemo',
     OFF : 'OffDemo'
   },
   Layout : {
     EQUALITY          : 'Equality',
     SPEECH_EXCITATION : 'SpeechExcitation',
-    EXCLUSIVE         : 'Exclusive'
+    EXCLUSIVE         : 'Exclusive',
+    PRESENTER         : 'Presentation'
   },
   AdmissionPolicy : {
     CLOSE     : 'closedAuthenticated',
     OPEN      : 'openAuthenticated',
     ANONYMOUS : 'anonymous'
+  },
+  AutoPromote : {
+    SPECIFICATE : 0,
+    EVERYONE    : 2147483648,
+    COMPANY     : 32768
   }
 };
 
 module.exports = class Conference extends EventEmitter
 {
-  static parseInformation(xml)
+  static ParseInformation(xml, conference)
   {
-    const information = new Information();
+    const information = new Information(conference);
 
     information.update(xml);
 
     return information;
+  }
+
+  static FromInformation(xml, ua)
+  {
+    const conference = new Conference();
+
+    conference.onNotify(xml);
+    conference.entity = conference.information.entity;
+    conference.ua = ua;
+
+    return conference;
   }
 
   constructor()
@@ -74,7 +92,6 @@ module.exports = class Conference extends EventEmitter
     this._pin = undefined;
     this._from = undefined;
     this._error = undefined;
-
     this._entity = undefined;
 
     this._information = new Information(this);
@@ -88,6 +105,8 @@ module.exports = class Conference extends EventEmitter
 
     this._subscription = undefined;
 
+    this._pendings = {};
+
     this.on('uaChanged', (ua) => 
     {
       this.from = ua.get('uri').toString();
@@ -99,7 +118,8 @@ module.exports = class Conference extends EventEmitter
     const focusHandlers = {
       'accepted' : this.onAccepted.bind(this),
       'ended'    : this.onEnded.bind(this),
-      'failed'   : this.onFailed.bind(this)
+      'failed'   : this.onFailed.bind(this),
+      'newInfo'  : this.onNewInfo.bind(this)
     };
     const mediaHandlers = {};
     const shareHandlers = {};
@@ -337,7 +357,7 @@ module.exports = class Conference extends EventEmitter
 
   parseInformation(xml)
   {
-    return Conference.parseInformation(xml);
+    return Conference.ParseInformation(xml, this);
   }
 
   getConference() 
@@ -366,63 +386,133 @@ module.exports = class Conference extends EventEmitter
     return this._deferSend(body);
   }
 
-  // modify conference layout
-  modifyConference(layout) 
+  // modify conference description & view
+  modifyConference(key, params = {}) 
   {
     const conferenceInfo = {
-      '@entity'         : this.entity,
-      '@state'          : 'partial',
-      'conference-view' : {
-        'entity-view' : {
-          '@entity'      : this.mediaChannel.target,
-          '@state'       : 'partial',
-          'entity-state' : {
-            'video-layout'   : layout,
-            'video-max-view' : 5
-          }
-        }
-      }
+      '@entity' : this.entity,
+      '@state'  : 'partial'
     };
+
+    if (!key) 
+    { 
+      throw new Error('Missing Key');
+    }
+
+    if (typeof key !== 'string' ||
+     key !== 'conference-view' || 
+     key !== 'conference-description')
+    {
+      throw new Error('Unsupported Key');
+    }
+
+    conferenceInfo[key] = params;
 
     const body = {};
 
-    body[C.GET_CONFERENCE_STATISTICS] = {
+    body[C.MODIFY_CONFERENCE] = {
       'conference-info' : conferenceInfo
     };
 
     return this._deferSend(body);
   }
 
-  modifyConferenceLock(lock, admissionPolicy) 
+  modifyConferenceView(view = {})
+  {
+    const conferenceView = {
+      'entity-view' : {
+        '@entity'      : this.mediaChannel.target,
+        '@state'       : 'partial',
+        'entity-state' : view
+      }
+    };
+
+    return this.modifyConference('conference-view', conferenceView);
+  }
+
+  modifyConferenceDescription(description = {})
+  {
+    return this.modifyConference('conference-description', description);
+  }
+
+  setDefaulFilter({ ingress, egress })
+  {
+    const filter = {
+      'role' : 'default'
+    };
+    
+    if (ingress !== undefined)
+    {
+      filter['ingressFilter'] = ingress?'unblock':'block';
+    }
+    if (egress !== undefined)
+    {
+      filter['egressFilter'] = egress?'unblock':'block';
+    }
+        
+    const filterRule = {
+      'mediaFiltersRules' : {
+        'initialFilters' : filter
+      }
+    };
+
+    return this.modifyConferenceView(filterRule);
+  }
+  setAttendeeFilter({ ingress, egress })
+  {
+    const filter = {
+      'role' : 'attendee'
+    };
+    
+    if (ingress !== undefined)
+    {
+      filter['ingressFilter'] = ingress?'unblock':'block';
+    }
+    if (egress !== undefined)
+    {
+      filter['egressFilter'] = egress?'unblock':'block';
+    }
+        
+    const filterRule = {
+      'mediaFiltersRules' : {
+        'initialFilters' : filter
+      }
+    };
+
+    return this.modifyConferenceView(filterRule);
+  }
+
+  modifyConferenceLock({ locked, admissionPolicy, autopromote }) 
   {
     const body = {};
 
-    body[C.GET_CONFERENCE_STATISTICS] = {
+    body[C.MODIFY_CONFERNCE_LOCK] = {
       'conferenceKeys' : {
         '@confEntity' : this.entity
       },
-      'locked'           : lock,
-      'admission-policy' : admissionPolicy
+      'locked' : locked
     };
+
+    if (!locked)
+    {
+      body[C.MODIFY_CONFERNCE_LOCK]['admission-policy'] = admissionPolicy;
+      body[C.MODIFY_CONFERNCE_LOCK]['autopromote'] = autopromote;
+    }
 
     this._deferSend(body);
   }
 
-  addUser(uri) 
+  addUser(uris = []) 
   {
     const body = {};
     const user = [];
 
-    if (Array.isArray(uri)) 
+    if (!Array.isArray(uris)) 
     {
-      for (const value of uri) 
-      {
-        user.push({
-          '@requestUri' : value
-        });
-      }
+      uris = [ uris ];
     }
-    else 
+
+    for (const uri of uris) 
     {
       user.push({
         '@requestUri' : uri
@@ -453,8 +543,12 @@ module.exports = class Conference extends EventEmitter
     return this._deferSend(body);
   }
 
-  modifyUserRole(entity, role) 
+  // only permission role can be modified
+  modifyUserRole({ entity, role }) 
   {
+    entity = entity || this.from;
+    role = role || 'attendee'; // attendee | presenter | organizer
+
     const body = {};
 
     body[C.MODIFY_USER_ROLES] = {
@@ -470,54 +564,34 @@ module.exports = class Conference extends EventEmitter
     return this._deferSend(body);
   }
 
-  modifyEndpointMedia(entity, enable) 
+  modifyEndpointMedia({ entity, media }) 
   {
-    const body = {};
+    entity = entity || this.from;
+    media = media || {
+      'label'                : 'main-audio',
+      'media-ingress-filter' : 'unblock',
+      'media-egress-filter'  : 'unblock'
+    };
 
-    const user = this.users.getUser(this.from);
+    const user = this.users.getUser(entity);
 
     if (!user)
     {
       throw new Error('Missing User');
     }
-
-    let endpoint = user['endpoint'];
-
-    if (!endpoint)
-    {
-      throw new Error('Missing Endpoint');
-    }
-
-    endpoint = Utils.arrayfy(endpoint);
-    
-    const avEndpoint = endpoint.find((e) =>
-    {
-      return e['@session-type'] == 'audio-video';
-    });
+  
+    const avEndpoint = user.getEndpoint('audio-video');
 
     if (!avEndpoint)
     {
       throw new Error('Missing AV Endpoint');
     }
 
-    let media = avEndpoint['media'];
+    const userMedia = user.getMedia(media.label);
 
-    if (!media)
-    {
-      throw new Error('Missing Media');
-    }
+    if (!userMedia) { throw new Error('Missing User Media'); }
 
-    media = Utils.arrayfy(media);
-
-    const audio = media.find((m) =>
-    {
-      return m['type'] == 'audio';
-    });
-
-    const video = media.find((m) =>
-    {
-      return m['type'] == 'video';
-    });
+    const body = {};
 
     body[C.MODIFY_ENDPOINT_MEDIA] = {
       '@mcuUri'   : this.mediaChannel.target,
@@ -525,25 +599,90 @@ module.exports = class Conference extends EventEmitter
         '@confEntity'     : this.entity,
         '@userEntity'     : entity,
         '@endpointEntity' : avEndpoint['@entity'],
-        '@mediaId'        : audio['@id']
+        '@mediaId'        : userMedia['@id']
       },
-      'media' : {
-        '@id'                  : audio['@id'],
-        'type'                 : audio['type'],
-        'status'               : enable?'sendrecv':'recvonly',
-        'media-ingress-filter' : enable?'unblock':'block'
+      'media' : media
+    };
+
+    return this._deferSend(body);
+  }
+
+  modifyEndpointMediaBatch({ entity, media }) 
+  {
+    const userEntity = [];
+
+    if (!Array.isArray(entity)) 
+    {
+      entity = [ entity ];
+    }
+
+    for (const e of entity) 
+    {
+      userEntity.push({
+        '#text' : e
+      });
+    }
+
+    const userMedia = [];
+
+    if (!Array.isArray(media)) 
+    {
+      media = [ media ];
+    }
+
+    for (const m of media) 
+    {
+      m['@id'] = m['label']==='main-audio'?1:
+        m['label']==='main-video'?2:1;
+
+      userMedia.push(m);
+    }
+
+    const body = {};
+
+    body[C.MODIFY_ENDPOINT_MEDIA] = {
+      'conferenceKeys' : {
+        '@confEntity' : this.entity
+      },
+      'userEntity' : userEntity,
+      'endpoint'   : {
+        '@session-type' : 'audio-video',
+        'media'         : userMedia
       }
     };
 
     return this._deferSend(body);
   }
 
-  modifyEndpointMediaBatch(entityArray, options) 
+  setLobbyAccess({ entity, granted }) 
   {
+    const body = {};
+    const userEntity = [];
 
+    if (!Array.isArray(entity)) 
+    {
+      entity = [ entity ];
+    }
+
+    for (const e of entity) 
+    {
+      userEntity.push({
+        '#text' : e
+      });
+    }
+
+    body[C.SET_LOBBY_ACCESS] = {
+      'conferenceKeys' : {
+        '@confEntity' : this.entity
+      },
+      'userEntity' : userEntity,
+      'access'     : granted?C.LobbyAccess.GRANTED:C.LobbyAccess.DENIED
+    };
+
+    return this._deferSend(body);
   }
 
-  setLobbyAccess(entity, enable) 
+  setDemonstrator({ entity, enable }) 
   {
     const body = {};
     const userEntity = [];
@@ -560,39 +699,7 @@ module.exports = class Conference extends EventEmitter
       });
     }
 
-    body[C.SET_LOBBY_ACCESS] = {
-      'conferenceKeys' : {
-        '@confEntity' : this.entity
-      },
-      'userEntity' : userEntity,
-      'access'     : enable?C.LobbyAccess.GRANTED:C.LobbyAccess.DENIED
-    };
-
-    return this._deferSend(body);
-  }
-
-  setDemonstrator(entity, enable) 
-  {
-    const body = {};
-    const userEntity = [];
-
-    if (Array.isArray(entity)) 
-    {
-      for (const value of entity) 
-      {
-        userEntity.push({
-          '#text' : value
-        });
-      }
-    }
-    else 
-    {
-      userEntity.push({
-        '#text' : entity
-      });
-    }
-
-    body[C.SET_LOBBY_ACCESS] = {
+    body[C.SET_DEMONSTRATOR] = {
       'conferenceKeys' : {
         '@confEntity' : this.entity
       },
@@ -603,9 +710,10 @@ module.exports = class Conference extends EventEmitter
     return this._deferSend(body);
   }
 
-  setTitle(title) 
+  setTitle({ entity, title }) 
   {
-    const skeleton = {
+    entity = entity || [ this.from ];
+    title = title || {
       type           : 'Static', // Static|Dynamic
       repeatCount    : 3,
       repeatInterval : 5,
@@ -615,23 +723,34 @@ module.exports = class Conference extends EventEmitter
       rollDirection  : 'R2L' // R2L|L2R
     };
 
-    for (const attr in title) 
+    if (!Array.isArray(entity)) 
     {
-      if (title[attr] !== undefined) 
-      {
-        skeleton[attr] = title[attr];
-      }
+      entity = [ entity ];
+    }
+
+    const userEntity = [];
+
+    for (const value of entity) 
+    {
+      userEntity.push({
+        '#text' : value
+      });
     }
 
     const body = {};
 
-    body[C.SET_TITLE] = title;
-
-    Object.assign(body[C.SET_TITLE], {
+    body[C.SET_TITLE] = {
       'conferenceKeys' : {
         '@confEntity' : this.entity
       }
-    });
+    };
+
+    if (userEntity.length > 0)
+    {
+      body[C.SET_TITLE]['userEntity'] = userEntity;
+    }
+
+    Object.assign(body[C.SET_TITLE], title);
 
     return this._deferSend(body);
   }
@@ -651,9 +770,27 @@ module.exports = class Conference extends EventEmitter
     return this._deferSend(body);
   }
 
-  addRtmpUserBatch() 
+  addRtmpUser(rtmpUser)
   {
-    const rtmpUser = [];
+    const body = {};
+
+    body[C.ADD_RTMP_USER] = {
+      'conferenceKeys' : {
+        '@confEntity' : this.entity
+      },
+      'rtmp-user' : rtmpUser
+    };
+
+    return this._deferSend(body);
+  }
+
+  addRtmpUserBatch(rtmpUser) 
+  {
+    if (!Array.isArray(rtmpUser)) 
+    {
+      rtmpUser = [ rtmpUser ];
+    }
+
     const body = {};
 
     body[C.ADD_RTMP_USER_BATCH] = {};
@@ -668,7 +805,7 @@ module.exports = class Conference extends EventEmitter
     return this._deferSend(body);
   }
 
-  modifyRtmpEndpointMedia(entity, endpoint) 
+  modifyRtmpEndpointMedia({ entity, endpoint }) 
   {
     const body = {};
 
@@ -769,6 +906,58 @@ module.exports = class Conference extends EventEmitter
     this.emit('connectFailed', data);
   }
 
+  onNewInfo(data)
+  {
+    if (data.originator === 'remote' && data.info.contentType === 'application/conference-ctrl+xml')
+    {
+      const response = Command.Parse(data.info.body);
+      const requestId = response['@requestId'];
+      const code = response['@code'];
+      const defer = this._pendings[requestId];
+
+      if (!defer)
+      {
+        debug('Received unknown conference-ctrl');
+
+        return;
+      }
+
+      if (!response) 
+      {
+        data.cause = 'Missing Content';
+        defer.reject(data);
+  
+        return;
+      }
+  
+      let result;
+  
+      for (const attr in response) 
+      {
+        if (!(/^@/.test(attr))) 
+        {
+          debug('info command: %s', attr);
+          debug('info result: %o', response[attr]);
+          result = response[attr];
+        }
+      }
+  
+      switch (code)
+      {
+        case 'success':
+          defer.resolve(result);
+          break;
+        case 'failure':
+          data.cause = code;
+          data.result = result;
+          defer.reject(data);
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
   onNotify(data)
   {
     this.information.update(data.notify);
@@ -818,14 +1007,17 @@ module.exports = class Conference extends EventEmitter
   
   _userUpdated(user)
   {
+    debug('userUpdated()');
     this.emit('userUpdated', user);
   }
   _userAdded(user)
   {
+    debug('userAdded()');
     this.emit('userAdded', user);
   }
   _userDeleted(user)
   {
+    debug('userDeleted()');
     this.emit('userDeleted', user);
   }
 
@@ -953,15 +1145,35 @@ module.exports = class Conference extends EventEmitter
     
             return;
           }
-    
+
+          const code = response['@code'];
+          let result;
+
           for (const attr in response) 
           {
             if (!(/^@/.test(attr))) 
             {
               debug('info command: %s', attr);
               debug('info result: %o', response[attr]);
-              defer.resolve(response[attr]);
+              result = response[attr];
             }
+          }
+
+          switch (code)
+          {
+            case 'success':
+              defer.resolve(result);
+              break;
+            case 'failure':
+              data.cause = code;
+              data.result = result;
+              defer.reject(data);
+              break;
+            case 'pending':
+              this._pendings[requestId] = defer;
+              break;
+            default:
+              break;
           }
         },
         failed : (data) =>

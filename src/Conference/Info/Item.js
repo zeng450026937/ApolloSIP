@@ -37,6 +37,10 @@ module.exports = class Item
     {
       debug('entity|id unmatch');
       merged = [ rhys, object ];
+      merged = merged.filter(function(item)
+      {
+        return item['@state'] !== 'deleted';
+      });
     }
     else
     {

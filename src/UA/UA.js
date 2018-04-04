@@ -1,4 +1,5 @@
 const SIP = require('../Base/SIP');
+const Utils = require('../Base/Utils');
 const URL = require('url');
 const Base64 = require('js-base64').Base64;
 const SocketInterface = require('../Socket/SocketInterface');
@@ -354,8 +355,13 @@ module.exports = class UA extends SIP.UA
       case ApolloControl.CONTROL_GROUP.NOTICE_CONTROL:
         if (actionName === 'bookConferenceUpdate') 
         {
-          this.emit('bookConferenceUpdated', action['xml-body']);
-          debug('bookConferenceUpdated : %o', action['xml-body']);
+          const updateInfo = action['xml-body'];
+
+          updateInfo['template-update'] = Utils.booleanify(updateInfo['template-update']);
+          updateInfo['schedule-update'] = Utils.booleanify(updateInfo['schedule-update']);
+
+          this.emit('bookConferenceUpdated', updateInfo);
+          debug('bookConferenceUpdated : %o', updateInfo);
         }
         break;
     }

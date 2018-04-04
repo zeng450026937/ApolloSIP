@@ -52,7 +52,7 @@ module.exports = class Users extends Item
   {
     return this.userList.find((user) =>
     {
-      return user.entity == entity;
+      return user.entity === entity;
     });
   }
 
@@ -80,6 +80,8 @@ module.exports = class Users extends Item
     // we should use the previous object instead of create new one every time.
     this._userList = list.map(function(userInfo)
     {
+      const conference = this._information._conference;
+
       const user = new User(userInfo);
       const currentUserEntity = this._information.from;
       const organizer = this._information.description.organizer;
@@ -93,6 +95,59 @@ module.exports = class Users extends Item
       user.isOrganizer = function()
       {
         return user.uid === organizer.uid;
+      };
+
+      user.setFilter = function({ label, ingress, egress })
+      {
+        if (!conference) 
+        { 
+          throw new Error('Missing conference');
+        }
+
+        label = label || 'main-audio';
+
+        const media = {
+          'label' : label
+        };
+
+        if (ingress !== undefined)
+        {
+          media['media-ingress-filter'] = ingress?'unblock':'block';
+        }
+        if (egress !== undefined)
+        {
+          media['media-egress-filter'] = egress?'unblock':'block';
+        }
+
+        return conference.modifyEndpointMedia({ entity: this.entity, media: media });
+      };
+      user.setAudioFilter = function({ ingress, egress })
+      {
+        return this.setFilter({
+          label   : 'main-audio',
+          ingress : ingress,
+          egress  : egress
+        });
+      };
+      user.setVideoFilter = function({ ingress, egress })
+      {
+        return this.setFilter({
+          label   : 'main-video',
+          ingress : ingress,
+          egress  : egress
+        });
+      };
+
+      user.allow = function(granted)
+      {
+        if (this.isOnHold())
+        {
+          return conference.setLobbyAccess({ entity: this.entity, granted: granted });
+        }
+        else
+        {
+          throw new Error('Should only allow on-hold user');
+        }
       };
 
       return user;

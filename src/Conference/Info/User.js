@@ -39,8 +39,9 @@ module.exports = class User extends Item
   get roles()
   {
     const userRoles = {
-      permission : 'attendee', // attendee | presenter | organizer
-      demostate  : 'audience' // audience | demonstrator
+      'permission'         : 'attendee', // attendee | castviewer | presenter | organizer
+      'demostate'          : 'audience', // audience | demonstrator
+      'presenterDemostate' : 'audience' // audience | demonstrator
     };
     const rolesEntry = Utils.arrayfy(this.get('roles')['entry']);
     
@@ -53,6 +54,9 @@ module.exports = class User extends Item
           break;
         case 'demostate':
           userRoles.demostate = role['#text'];
+          break;
+        case 'presenter-demostate':
+          userRoles.presenterDemostate = role['#text'];
           break;
       }
     });
@@ -89,6 +93,17 @@ module.exports = class User extends Item
     return list;
   }
 
+  // audio-video | focus | applicationsharing
+  getEndpoint(type)
+  {
+    const endpoint = this.endpoint.find(function(e)
+    {
+      return e['@session-type'] === type;
+    });
+
+    return endpoint;
+  }
+
   // main-audio | main-video | applicationsharing
   getMedia(label)
   {
@@ -98,6 +113,38 @@ module.exports = class User extends Item
     });
 
     return media;
+  }
+
+  getAudioFilter()
+  {
+    const media = this.getMedia('main-audio') || {};
+
+    return {
+      ingress : media['media-ingress-filter'],
+      egress  : media['media-egress-filter']
+    };
+  }
+
+  getVideoFilter()
+  {
+    const media = this.getMedia('main-video') || {};
+
+    return {
+      ingress : media['media-ingress-filter'],
+      egress  : media['media-egress-filter']
+    };
+  }
+
+  isPresenter()
+  {
+    return this.roles.permission === 'presenter';
+  }
+
+  isOnHold()
+  {
+    const endpoint = this.getEndpoint('focus') || this.getEndpoint('audio-video');
+
+    return endpoint && endpoint.status === 'on-hold';
   }
 
   isSharing()

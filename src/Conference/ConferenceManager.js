@@ -23,41 +23,16 @@ module.exports = class ConferenceManager extends Manager
   constructor() 
   {
     super();
-
-    this._from = undefined;
-    this._factoryUri = undefined;
-
-    this.on('uaChanged', (ua) => 
-    {
-      this.from = ua.get('uri');
-      this.factoryUri = ua.get('conferenceFactoryUri');
-    });
   }
 
   get from()
   {
-    return this._from;
-  }
-  set from(from)
-  {
-    if (this._from !== from)
-    {
-      this._from = from;
-      this.emit('fromChanged', from);
-    }
+    return this.ua.get('uri');
   }
 
   get factoryUri()
   {
-    return this._factoryUri;
-  }
-  set factoryUri(factoryUri)
-  {
-    if (this._factoryUri !== factoryUri)
-    {
-      this._factoryUri = factoryUri;
-      this.emit('factoryUriChanged', factoryUri);
-    }
+    return this.ua.get('conferenceFactoryUri');
   }
 
   isAvariable()
@@ -65,9 +40,11 @@ module.exports = class ConferenceManager extends Manager
     return super.isAvariable() && (this.factoryUri?true:false);
   }
 
-  createConference(conferenceInfo) 
+  createConference(info) 
   {
-    return this.addConference(conferenceInfo)
+    debug('createConference()');
+
+    return this.addConference(info)
       .catch((e) => 
       {
         debug('add conference failed. error: %o', e);
@@ -75,49 +52,24 @@ module.exports = class ConferenceManager extends Manager
       })
       .then((xml) => 
       {
-        const conference = new Conference();
-        const information = Conference.parseInformation(xml);
-
-        conference.ua = this.ua;
-        conference.entity = information.entity;
-
-        let uris = information.description.confUris;
-
-        uris = Utils.arrayfy(uris['entry']);
-
-        uris.forEach(function(entry)
-        {
-          const { purpose, uri } = entry;
-
-          switch (purpose) 
-          {
-            case 'focus':
-              conference.focusChannel.target = uri;
-              break;
-            case 'audio-video':
-              conference.mediaChannel.target = uri;
-              break;
-            case 'applicationsharing':
-              conference.shareChannel.target = uri;
-              break;
-          }
-        });  
+        const conference = Conference.FromInformation(xml, this.ua);
 
         return Promise.resolve(conference);
       });
   }
 
-  addConference(conferenceInfo) 
+  addConference(info) 
   {
-    const body = {};
-    const defaultInfo = {
+    debug('addConference()');
+
+    info = info || {
       '@entity'                : '',
       'conference-description' : {
         'organizer' : {
-          'username' : this.from._user,
-          'realm'    : this.from._host
+          'username' : this.from.user,
+          'realm'    : this.from.host
         },
-        'subject' : 'Conference',
+        'subject' : 'default conference',
         'profile' : 'default' // default | demonstrator
       },
       'conference-view' : {
@@ -129,34 +81,34 @@ module.exports = class ConferenceManager extends Manager
       }
     };
 
-    conferenceInfo = conferenceInfo || defaultInfo;
+    const body = {};
 
     body[C.ADD_CONFERENCE] = {
-      'conference-info' : conferenceInfo
+      'conference-info' : info
     };
 
     return this._deferSend(body);
   }
 
-  deleteConference(conferenceEntity) 
+  deleteConference(entity) 
   {
     const body = {};
 
     body[C.DELETE_CONFERENCE] = {
       'conferenceKeys' : {
-        '@entity' : conferenceEntity
+        '@entity' : entity
       }
     };
 
     return this._deferSend(body);
   }
 
-  addVMR(conferenceInfo) 
+  addVMR(info) 
   {
     const body = {};
 
     body[C.ADD_VMR] = {
-      'conference-info' : conferenceInfo
+      'conference-info' : info
     };
 
     return this._deferSend(body);
@@ -171,37 +123,37 @@ module.exports = class ConferenceManager extends Manager
     return this._deferSend(body);
   }
 
-  getConferenceByNumber(conferenceNumber) 
+  getConferenceByNumber(number) 
   {
     const body = {};
 
     body[C.GET_CONFERENCE_BY_NUM] = {
       'conferenceKeys' : {
-        '@confNumber' : conferenceNumber
+        '@confNumber' : number
       }
     };
 
     return this._deferSend(body);
   }
 
-  bookConference(conferenceInfo) 
+  bookConference(info) 
   {
     const body = {};
 
     body[C.BOOK_CONFERENCE] = {
-      'conference-info' : conferenceInfo
+      'conference-info' : info
     };
 
     return this._deferSend(body);
   }
 
-  cancelConference(conferenceEntity) 
+  cancelConference(entity) 
   {
     const body = {};
 
     body[C.BOOK_CONFERENCE] = {
       'conference-info' : {
-        '@entity' : conferenceEntity,
+        '@entity' : entity,
         '@state'  : 'deleted'
       }
     };
@@ -209,7 +161,9 @@ module.exports = class ConferenceManager extends Manager
     return this._deferSend(body);
   }
 
-  getConferenceSchedule(startDateTime, endDateTime) 
+  // startDateTime : Date object
+  // endDateTime : Date object
+  getConferenceSchedule({ startDateTime, endDateTime }) 
   {
     const body = {};
 
@@ -221,6 +175,7 @@ module.exports = class ConferenceManager extends Manager
     return this._deferSend(body);
   }
 
+  // dateTime : Date object
   getRunningConference(dateTime) 
   {
     dateTime = dateTime || new Date();
@@ -234,17 +189,13 @@ module.exports = class ConferenceManager extends Manager
     return this._deferSend(body);
   }
 
-  getConferenceTemplate(conferenceEntity) 
+  getConferenceTemplate(entity) 
   {
-    if (!conferenceEntity || conferenceEntity === '') 
-    {
-      return Promise.reject('Conference entity is required.');
-    }
     const body = {};
 
     body[C.GET_BOOK_CONFERENCE_TEMPLATE] = {
       'conference-info' : {
-        '@entity' : conferenceEntity
+        '@entity' : entity
       }
     };
 
@@ -304,9 +255,4 @@ module.exports = class ConferenceManager extends Manager
     return defer.promise;
   }
 
-  onConferenceFactoryUriUpdated(uri)
-  {
-    this.factoryUri = uri;
-    super.onConferenceFactoryUriUpdated(uri);
-  }
 };

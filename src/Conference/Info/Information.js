@@ -20,7 +20,7 @@ module.exports = class Information extends EventEmitter
     this._conference = conference;
 
     this._entity = undefined;
-    this._version = -1;
+    this._version = 0;
     this._time = undefined;
     this._description = new Description(this);
     this._state = new State(this);
@@ -32,9 +32,13 @@ module.exports = class Information extends EventEmitter
   {
     return this._conference?this._conference.from:null;
   }
+  get confEntity()
+  {
+    return this._conference?this._conference.entity:null;
+  }
   get entity()
   {
-    return this._conference?this._conference.entity:this._entity;
+    return this._entity;
   }
   get version()
   {
@@ -80,39 +84,51 @@ module.exports = class Information extends EventEmitter
       return;
     }
 
-    debug('update information: %o', info);
+    debug('Update information: %o', info);
 
+    if ((this.confEntity && this.confEntity !== info['@entity']) ||
+        (this.entity && this.entity !== info['@entity']))
+    {
+      warn('Update information failed. Error: entity unmatch');
+
+      return;
+    }
+    
     if (!this.entity)
     {
       this._entity = info['@entity'];
     }
-    else if (this.entity !== info['@entity'])
-    {
-      warn('Entity unmatch!');
-      
-      return;
-    }
 
     if (this.version < info['@version'])
-    {
+    {      
       switch (info['@state']) 
       {
         case 'full':
           this._fullUpdate(info);
           break;
         case 'partial':
-          this._particalUpdate(info);
+          if (this._conference && this.version && (info['@version'] - this.version > 1))
+          {
+            warn('Missing information. current version: %d, received version: %d', this.version, info['@version']);
+            this._conference.getConference()
+              .then((full_info) =>
+              {
+                this.update(full_info);
+              });
+          }
+          else
+          {
+            this._particalUpdate(info);
+          }
           break;
         case 'deleted':
           this._deletedUpdate();
           break;
         default:
-          warn('Missing state. Fallback to partical update.');
+          warn('Missing state. Use partial update.');
           this._particalUpdate(info);
           break;
       }
-
-      this._version = info['@version'];
     }
   }
 
@@ -149,6 +165,7 @@ module.exports = class Information extends EventEmitter
 
   _fullUpdate(info)
   {
+    this._version = info['@version'];
     this._time = info['now-time'];
 
     this._description.update(info['conference-description'], true);
@@ -160,8 +177,9 @@ module.exports = class Information extends EventEmitter
   }
   _particalUpdate(info)
   {
-    const participantCount = this.users.participantCount;
+    const participantCount = this.users.participantCount || 0;
 
+    this._version++;
     this._time = info['now-time'];
 
     this._description.update(info['conference-description']);

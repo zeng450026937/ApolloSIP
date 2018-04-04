@@ -10,14 +10,20 @@ module.exports = class Description extends Item
     this._information = information;
   }
 
+  // closedAuthenticated：allowd by presenter
+  // openAuthenticated：company allowed
+  // anonymous：everyone allowed；
   get admissionPolicy()
   {
-    return this.get('subject');
+    return this.get('admission-policy');
   }
   get attendeePin()
   {
     return this.get('attendee-pin');
   }
+  // 0: specificate by organizer
+  // 2147483648: everyone
+  // 32768: company
   get autopromote()
   {
     return this.get('autopromote');
@@ -66,6 +72,22 @@ module.exports = class Description extends Item
   {
     return Utils.booleanify(this.get('interactive-broadcast-enabled'));
   }
+  get invitees()
+  {
+    return this.get('invitees');
+  }
+  get lastUpdateTime()
+  {
+    return this.get('last-update-time');
+  }
+  get lastUpdateTimeStamp()
+  {
+    return this.get('last-update-time-stamp');
+  }
+  get lobbyCapable()
+  {
+    return this.get('lobby-capable');
+  }
   get maximumUserCount()
   {
     return this.get('maximum-user-count');
@@ -81,6 +103,14 @@ module.exports = class Description extends Item
   get profile()
   {
     return this.get('profile');
+  }
+  get recurrencePattern()
+  {
+    return this.get('recurrence-pattern');
+  }
+  get rtmpInvitees()
+  {
+    return this.get('rtmp-invitees');
   }
   get scheduleId()
   {
@@ -99,6 +129,7 @@ module.exports = class Description extends Item
     return this.get('subject');
   }
 
+  // focus | audio-video | applicationsharing
   getUri(purpose)
   {
     let uris = this.confUris;

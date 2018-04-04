@@ -30,7 +30,7 @@ exports.objectify = (xml) =>
 };
 
 exports.formatDate = fecha.format;
-exports.parseDate = fecha.format;
+exports.parseDate = fecha.parse;
 
 exports.arrayfy = (obj) => 
 {
