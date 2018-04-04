@@ -55,7 +55,7 @@ module.exports = class UA extends SIP.UA
       servers              : undefined,
       proxy                : undefined,
       socketOptions        : undefined,
-      debug                : true,
+      debug                : false,
       // peer connection config
       iceServers           : undefined, // [ { urls: 'stun:stun.l.google.com:19302' } ]
       iceTransportPolicy   : 'all', // all | relay
