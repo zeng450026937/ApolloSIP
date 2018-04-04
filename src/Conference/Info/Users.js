@@ -140,6 +140,11 @@ module.exports = class Users extends Item
 
       user.allow = function(granted)
       {
+        if (!conference) 
+        { 
+          throw new Error('Missing conference');
+        }
+
         if (this.isOnHold())
         {
           return conference.setLobbyAccess({ entity: this.entity, granted: granted });
@@ -148,6 +153,16 @@ module.exports = class Users extends Item
         {
           throw new Error('Should only allow on-hold user');
         }
+      };
+
+      user.sendMessage = function(message)
+      {
+        if (!conference) 
+        { 
+          throw new Error('Missing conference');
+        }
+
+        return conference.ua.sendMessage(this.entity, message);
       };
 
       return user;
