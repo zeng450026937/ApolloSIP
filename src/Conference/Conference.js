@@ -966,7 +966,7 @@ module.exports = class Conference extends EventEmitter
 
   _descriptionUpdated()
   {
-    let uris = this.description.confUris;
+    let uris = this.description.confUris || {};
 
     uris = Utils.arrayfy(uris['entry']);
 

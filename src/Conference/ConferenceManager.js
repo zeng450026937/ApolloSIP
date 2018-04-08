@@ -23,6 +23,8 @@ module.exports = class ConferenceManager extends Manager
   constructor() 
   {
     super();
+
+    this._pendings = {};
   }
 
   get from()
@@ -228,14 +230,34 @@ module.exports = class ConferenceManager extends Manager
             return;
           }
 
+          const code = response['@code'];
+          let result;
+
           for (const attr in response) 
           {
             if (!(/^@/.test(attr))) 
             {
               debug('service command: %s', attr);
               debug('service result: %o', response[attr]);
-              defer.resolve(response[attr]);
+              result = response[attr];
             }
+          }
+
+          switch (code)
+          {
+            case 'success':
+              defer.resolve(result);
+              break;
+            case 'failure':
+              data.cause = code;
+              data.result = result;
+              defer.reject(data);
+              break;
+            case 'pending':
+              this._pendings[requestId] = defer;
+              break;
+            default:
+              break;
           }
         },
         'failed' : (data) =>

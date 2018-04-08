@@ -89,7 +89,7 @@ module.exports = class Information extends EventEmitter
     if ((this.confEntity && this.confEntity !== info['@entity']) ||
         (this.entity && this.entity !== info['@entity']))
     {
-      warn('Update information failed. Error: entity unmatch');
+      warn('Update information failed. Error: entity unmatch. %s', this.entity);
 
       return;
     }
@@ -210,6 +210,7 @@ module.exports = class Information extends EventEmitter
   {
     this._version = 0;
     this._time = '';
+    this._entity = null;
 
     this._description.update({}, true);
     this._state.update({}, true);
