@@ -1,5 +1,6 @@
 const webpack = require('webpack');
 
+const path = require('path');
 const pkg = require('./package.json');
 const year = new Date().getFullYear();
 const banner = `Apollo version ${pkg.version}\n
@@ -17,7 +18,7 @@ const baseConfig = {
     rules : [
       {
         test    : /\.js$/,
-        exclude : /node_modules/,
+        exclude : /node_modules(?!(\/|\\)fast-xml-parser)/,
         loader  : 'babel-loader',
         options : {
           presets : [ 'env' ]

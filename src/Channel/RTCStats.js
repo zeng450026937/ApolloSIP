@@ -461,6 +461,7 @@ module.exports = class RTCStats
               average>=2?3:
                 4;
     }
+
   }
 
   _parseRTPStats(report, stats)
@@ -472,6 +473,11 @@ module.exports = class RTCStats
     if (codec)
     {
       codec.name = codec.mimeType.split('/')[1];
+    }
+
+    if (!stats.codecId || !stats.trackId || !stats.transportId)
+    {
+      // TODO
     }
 
     if (transport)
@@ -509,6 +515,29 @@ module.exports = class RTCStats
 
       const prestats = this[direction][stats.mediaType];
 
+      const diff = (x={}, y={}, key) =>
+      {
+        if (typeof x[key] !== 'undefined' && typeof y[key] !== 'undefined')
+        {
+          return Math.abs(x[key] - y[key]);
+        }
+        else
+        {
+          debug('missing: %s', key, x[key], y[key]);
+          debug('stats: %o', stats, prestats);
+        }
+      
+        return 0;
+      };
+
+      const safe = (x) =>
+      {
+        if (!isFinite(x)) { return 0; }
+        if (isNaN(x)) { return 0; }
+
+        return x;
+      };
+
       if (prestats)
       {
         const time_diff = diff(stats, prestats, 'timestamp');
@@ -519,33 +548,33 @@ module.exports = class RTCStats
         {
           value_diff = diff(stats, prestats, 'bytesSent');
       
-          stats.outgoingBitrate = value_diff * 8 / time_diff;
+          stats.outgoingBitrate = safe(value_diff * 8 / time_diff);
         }
         // calc incomingBitrate
         if (direction==='inbound' && !stats.incomingBitrate)
         {
           value_diff = diff(stats, prestats, 'bytesReceived');
       
-          stats.incomingBitrate = value_diff * 8 / time_diff;
+          stats.incomingBitrate = safe(value_diff * 8 / time_diff);
         }
 
         // calc transport outgoingBitrate
-        if (stats.transport && !stats.transport.outgoingBitrate)
+        if (stats.transport && prestats.transport && !stats.transport.outgoingBitrate)
         {
           value_diff = diff(stats.transport, prestats.transport, 'bytesSent');
 
-          stats.transport.outgoingBitrate = value_diff * 8 / time_diff;
+          stats.transport.outgoingBitrate = safe(value_diff * 8 / time_diff);
         }
         // calc transport incomingBitrate
-        if (stats.transport && !stats.transport.incomingBitrate)
+        if (stats.transport && prestats.transport && !stats.transport.incomingBitrate)
         {
           value_diff = diff(stats.transport, prestats.transport, 'bytesReceived');
 
-          stats.transport.incomingBitrate = value_diff * 8 / time_diff;
+          stats.transport.incomingBitrate = safe(value_diff * 8 / time_diff);
         }
 
         // calc frameRate
-        if (stats.mediaType === 'video' && stats.track && !stats.track.frameRate)
+        if (stats.mediaType === 'video' && stats.track && prestats.track && !stats.track.frameRate)
         {
           if (direction === 'inbound')
           {
@@ -556,21 +585,12 @@ module.exports = class RTCStats
             value_diff = diff(stats.track, prestats.track, 'framesSent');
           }
 
-          stats.track.frameRate = value_diff / time_diff * 1000;
+          stats.track.frameRate = safe(value_diff / time_diff * 1000);
         }
       }
         
       this[direction][stats.mediaType] = stats;
     }
 
-    function diff(x, y, key)
-    {
-      if (x[key] && y[key])
-      {
-        return Math.abs(x[key] - y[key]);
-      }
-      
-      return 0;
-    }
   }
 };

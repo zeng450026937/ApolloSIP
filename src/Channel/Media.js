@@ -111,6 +111,7 @@ module.exports = class Media
   {
     this._constraints = Object.assign({}, constraints);
   }
+
   get receiveAudio()
   {
     return this._remote.audio;

@@ -29,12 +29,8 @@ module.exports = class MediaChannel extends Channel
     this._entity = undefined;
     this._media = new Media();
     this._stats = new RTCStats();
-
-    this._local_sdp = null;
-    this._remote_sdp = null;
-
-    this._local_ssrcs = [];
-    this._remote_ssrcs = [];
+    this._remoteStream = null;
+    this._localStream = null;
 
     this._iceTimerOut = null;
   }
@@ -100,6 +96,32 @@ module.exports = class MediaChannel extends Channel
 
   get localStream()
   {
+    return this._localStream;
+  }
+  set localStream(stream)
+  {
+    if (this._localStream !== stream)
+    {
+      this._localStream = stream;
+      this.emit('localStreamChanged', stream);
+    }
+  }
+
+  get remoteStream()
+  {
+    return this._remoteStream;
+  }
+  set remoteStream(stream)
+  {
+    if (this._remoteStream !== stream)
+    {
+      this._remoteStream = stream;
+      this.emit('remoteStreamChanged', stream);
+    }
+  }
+
+  getLocalStream()
+  {
     const pc = this.session.connection;
     let localStream;
 
@@ -126,7 +148,7 @@ module.exports = class MediaChannel extends Channel
 
     return localStream;
   }
-  get remoteStream()
+  getRemoteStream()
   {
     const pc = this.session.connection;
     let remoteStream;
@@ -231,6 +253,8 @@ module.exports = class MediaChannel extends Channel
         pc.removeStream(stream);
       });
     }
+
+    this.localStream = null;
   }
 
   setupRemoteMedia() 
@@ -269,6 +293,8 @@ module.exports = class MediaChannel extends Channel
         pc.removeStream(stream);
       });
     }
+
+    this.remoteStream = null;
   }
 
   setupElementStream(elements, stream)
@@ -318,17 +344,17 @@ module.exports = class MediaChannel extends Channel
 
   _peerconnection(data)
   {
-    data.peerconnection.onconnectionstatechange = (event) =>
+    data.peerconnection.onconnectionstatechange = () =>
     {
       debug('peerconnection:onconnectionstatechange : %s', data.peerconnection.connectionState);
     };
 
-    data.peerconnection.oniceconnectionstatechange = (event) =>
+    data.peerconnection.oniceconnectionstatechange = () =>
     {
       debug('peerconnection:oniceconnectionstatechange: %s', data.peerconnection.iceConnectionState);
     };
 
-    data.peerconnection.onicegatheringstatechange = (event) =>
+    data.peerconnection.onicegatheringstatechange = () =>
     {
       debug('peerconnection:onicegatheringstatechange: %s', data.peerconnection.iceGatheringState);
     };
@@ -336,6 +362,7 @@ module.exports = class MediaChannel extends Channel
     data.peerconnection.ontrack = () =>
     {
       debug('peerconnection:ontrack');
+      this.remoteStream = this.getRemoteStream();
       this.setupRemoteMedia();
     };
 
@@ -350,6 +377,7 @@ module.exports = class MediaChannel extends Channel
     data.peerconnection.onremovestream = () =>
     {
       debug('peerconnection:onremovestream');
+      this.remoteStream = this.getRemoteStream();
       this.setupRemoteMedia();
     };
 
@@ -395,6 +423,7 @@ module.exports = class MediaChannel extends Channel
       this.entity = response.getHeader('Apollo-Conference-Entity');
     }
 
+    this.localStream = this.getLocalStream();
     this.setupLocalMedia();
 
     super._accepted(data);
@@ -414,6 +443,9 @@ module.exports = class MediaChannel extends Channel
 
   _clear()
   {
+    this.localStream = null;
+    this.remoteStream = null;
+    
     let elements = this.media.localElements;
 
     this.setupElementStream(elements, null);
@@ -435,58 +467,112 @@ module.exports = class MediaChannel extends Channel
       sdp.media = [ sdp.media ];
     }
 
-    debug('sdp: %o', sdp);
-
-    let filter;
-
     if (data.originator === 'local')
     {
-      this._local_sdp = sdp;
-      this._local_ssrcs = [];
+      if (this._iceTimerOut)
+      {
+        clearInterval(this._iceTimerOut);
+        this._iceTimerOut = null;
+      }
 
       for (const m of sdp.media)
       {
         if (m.type === 'video')
         {
           m.content = this.type;
+          m.bandwidth = [ 
+            {
+              type  : 'AS',
+              limit : 2048 
+            },
+            {
+              type  : 'TIAS',
+              limit : 3072 
+            }
+          ];
+
+          // find codec payload
+          const vp8_rtp = m.rtp.filter((r) =>
+          {
+            return r.codec.toUpperCase() === 'VP8';
+          });
+          const h264_rtp = m.rtp.filter((r) =>
+          {
+            return r.codec.toUpperCase() === 'H264';
+          });
+
+          vp8_rtp.forEach((r) => 
+          {
+            const f = m.fmtp.find((x) =>
+            {
+              return x.payload === r.payload;
+            });
+
+            const config = [ 'max-fr=60', 'max-fs=8160' ];
+
+            if (f)
+            {
+              f.config = f.config
+                .split(';')
+                .filter((p) => { return !(/^max-fr/.test(p) || /^max-fs/.test(p)); })
+                .concat(config)
+                .join(';');
+            }
+            else
+            {
+              m.fmtp.push({
+                payload : r.payload,
+                config  : config.join(';')
+              });
+            }
+          });
+
+          h264_rtp.forEach((r) => 
+          {
+            const f = m.fmtp.find((x) =>
+            {
+              return x.payload === r.payload;
+            });
+
+            const config = [ 'max-mbps=244800', 'max-fs=8160' ];
+
+            if (f)
+            {
+              f.config = f.config
+                .split(';')
+                .filter((p) => { return !(/^max-mbps/.test(p) || /^max-fs/.test(p)); })
+                .concat(config)
+                .join(';');
+            }
+            else
+            {
+              m.fmtp.push({
+                payload : r.payload,
+                config  : config.join(';')
+              });
+            }
+          });
         }
 
-        if (!m.ssrcs)
+        if (m.type === 'audio')
         {
-          continue;
+          m.bandwidth = [ 
+            {
+              type  : 'AS',
+              limit : 64 
+            },
+            {
+              type  : 'TIAS',
+              limit : 128 
+            }
+          ];
         }
-        
-        filter = m.ssrcs.filter((value) =>
-        {
-          return value.attribute === 'cname';
-        });
-
-        this._local_ssrcs = this._local_ssrcs.concat(filter);
-      }
-    }
-
-    if (data.originator === 'remote')
-    {
-      this._remote_sdp = sdp;
-      this._remote_ssrcs = [];
-
-      for (const m of sdp.media)
-      {
-        if (!m.ssrcs)
-        {
-          continue;
-        }
-
-        filter = m.ssrcs.filter((value) =>
-        {
-          return value.attribute === 'cname';
-        });
-
-        this._remote_ssrcs = this._remote_ssrcs.concat(filter);
       }
     }
 
     data.sdp = SDPTransform.write(sdp);
+
+    debug('sdp: %o', sdp);
 
     super._sdp(data);
   }
@@ -554,30 +640,5 @@ module.exports = class MediaChannel extends Channel
     }
 
     super._newInfo(data);
-  }
-
-  isMatchLocalSsrc(ssrcId)
-  {
-    for (const ssrc of this._local_ssrcs) 
-    {
-      if (ssrcId == ssrc.id) 
-      {
-        return true;
-      }
-    }
-    
-    return false;
-  }
-  isMatchRemoteSsrc(ssrcId)
-  {
-    for (const ssrc of this._remote_ssrcs) 
-    {
-      if (ssrcId == ssrc.id) 
-      {
-        return true;
-      }
-    }
-    
-    return false;  
   }
 };

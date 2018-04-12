@@ -28,14 +28,13 @@
     "url": ""
   },
   "dependencies": {
-    "bowser": "^1.9.2",
     "debug": "^3.1.0",
-    "fast-xml-parser": "^3.3.3",
+    "fast-xml-parser": "^3.3.6",
     "fecha": "^2.3.3",
     "js-base64": "^2.4.3",
     "sdp-transform": "file:./sdp-transform",
-    "socket.io-client": "^2.0.4",
-    "webrtc-adapter": "^6.1.3",
+    "socket.io-client": "^2.1.0",
+    "webrtc-adapter": "^6.1.5",
     "xmlbuilder": "^9.0.7"
   },
   "devDependencies": {
@@ -45,8 +44,8 @@
     "eslint": "^4.19.1",
     "pegjs": "^0.10.0",
     "pegjs-loader": "^0.5.4",
-    "webpack": "^4.2.0",
-    "webpack-cli": "^2.0.12"
+    "webpack": "^4.5.0",
+    "webpack-cli": "^2.0.14"
   },
   "scripts": {
     "compile": "webpack --progress"
