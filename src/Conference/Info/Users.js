@@ -20,7 +20,7 @@ module.exports = class Users extends Item
 
   get participantCount()
   {
-    return this.get('@participant-count');
+    return this.get('@participant-count') || 0;
   }
 
   get userList()
@@ -60,17 +60,24 @@ module.exports = class Users extends Item
   {
     if (!obj) { return; }
 
-    let entity = undefined;
-    let updatingUser = undefined;
+    let updatingUser = obj['user'];
 
-    const userObj = obj['user'];
-
-    if (typeof userObj === 'object')
+    if (!Array.isArray(updatingUser))
     {
-      entity = userObj['@entity'];
+      updatingUser = [ updatingUser ];
     }
 
-    updatingUser = this.getUser(entity);
+    updatingUser = updatingUser.map(function(userObj)
+    {
+      let entity;
+
+      if (typeof userObj === 'object')
+      {
+        entity = userObj['@entity'];
+      }
+
+      return this.getUser(entity) || new User({ '@entity': entity });
+    }, this);
 
     super.update(obj, force);
 
@@ -168,7 +175,17 @@ module.exports = class Users extends Item
       return user;
     }, this);
 
-    this._updatedUser = this.getUser(entity) || updatingUser;
+    this._updatedUser = updatingUser.map(function(userObj)
+    {
+      let entity;
+
+      if (typeof userObj === 'object')
+      {
+        entity = userObj.entity;
+      }
+
+      return this.getUser(entity) || userObj;
+    }, this);
   }
 
 };

@@ -9,6 +9,9 @@ const Utils = require('../Base/Utils');
 const SIP = require('../Base/SIP');
 
 const debug = SIP.debug('Apollo:Conference');
+const warn = SIP.debug('Apollo:Conference:Warn');
+
+warn.log = console.warn.bind(console);
 
 const C = {
   GET_CONFERENCE               : 'getConference',
@@ -216,22 +219,10 @@ module.exports = class Conference extends EventEmitter
 
   get statistics()
   {
-    const report = this.mediaChannel.statistics;
-
-    if (report)
-    {
-      if (this.shareChannel.statistics)
-      {
-        report.screen = this.shareChannel.statistics.video;
-      }
-
-      if (report.screen)
-      {
-        report.screen.sender = report.screen.send.packetsSent ? true : false;
-      }
-    }
-
-    return report;
+    return {
+      media : this.mediaChannel.statistics,
+      share : this.shareChannel.statistics
+    };
   }
 
   get error()
@@ -355,9 +346,9 @@ module.exports = class Conference extends EventEmitter
     this._error = null;
   }
 
-  parseInformation(xml)
+  parseInformation(xml, attached = false)
   {
-    return Conference.ParseInformation(xml, this);
+    return Conference.ParseInformation(xml, attached?this:null);
   }
 
   getConference() 
@@ -1005,20 +996,50 @@ module.exports = class Conference extends EventEmitter
     this.emit('usersUpdated', this.users);
   }
   
-  _userUpdated(user)
+  _userUpdated(users = [])
   {
     debug('userUpdated()');
-    this.emit('userUpdated', user);
+
+    if (users.length < 1)
+    {
+      warn('Missing User Info');
+    }
+
+    users.forEach(function(user)
+    {
+      debug('updated user: %s', user.displayText);
+      this.emit('userUpdated', user);
+    }, this);
   }
-  _userAdded(user)
+  _userAdded(users = [])
   {
     debug('userAdded()');
-    this.emit('userAdded', user);
+
+    if (users.length < 1)
+    {
+      warn('Missing User Info');
+    }
+
+    users.forEach(function(user)
+    {
+      debug('added user: %s', user.displayText);
+      this.emit('userAdded', user);
+    }, this);
   }
-  _userDeleted(user)
+  _userDeleted(users = [])
   {
     debug('userDeleted()');
-    this.emit('userDeleted', user);
+
+    if (users.length < 1)
+    {
+      warn('Missing User Info');
+    }
+
+    users.forEach(function(user)
+    {
+      debug('deleted user: %s', user.displayText);
+      this.emit('userDeleted', user);
+    }, this);
   }
 
   _redirect(target)

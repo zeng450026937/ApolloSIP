@@ -139,7 +139,7 @@ module.exports = class Media
 
   get localElements() 
   {
-    return Object.assign({}, this._elements.local);
+    return this.elements.local;
   }
   set localElements(local = {}) 
   {
@@ -158,7 +158,7 @@ module.exports = class Media
 
   get remoteElements() 
   {
-    return Object.assign({}, this._elements.remote);
+    return this.elements.remote;
   }
   set remoteElements(remote = {}) 
   {
@@ -176,7 +176,7 @@ module.exports = class Media
 
   get elements()
   {
-    return Object.assign({}, this._elements);
+    return this._elements;
   }
   set elements(elements = {})
   {
@@ -185,7 +185,7 @@ module.exports = class Media
 
   _setupElement(element) 
   {
-    if (element.remote) 
+    if (element) 
     {
       element.autoplay = true;
       element.onloadedmetadata = () => 

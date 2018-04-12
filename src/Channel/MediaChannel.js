@@ -1,12 +1,12 @@
 const Channel = require('./Channel');
-const Browser = require('bowser');
 const SDPTransform = require('sdp-transform');
 const Utils = require('../Base/Utils');
 const SIP = require('../Base/SIP');
 const Media = require('./Media');
-const MediaStats = require('./MediaStats');
+const RTCStats = require('./RTCStats');
 
 const debug = SIP.debug('Apollo:MediaChannel');
+const warn = SIP.debug('Apollo:MediaChannel:Warn');
 
 const TYPE = {
   MAIN   : 'main',
@@ -28,7 +28,7 @@ module.exports = class MediaChannel extends Channel
     this._focusUri = undefined;
     this._entity = undefined;
     this._media = new Media();
-    this._stats = new MediaStats(this);
+    this._stats = new RTCStats();
 
     this._local_sdp = null;
     this._remote_sdp = null;
@@ -93,138 +93,9 @@ module.exports = class MediaChannel extends Channel
 
   get statistics()
   {
-    if (!this._session)
-    {
-      return null;
-    }
+    this.getStats();
 
-    const pc = this.session.connection;
-
-    if (!pc) return null;
-
-    if (pc.signalingState !== 'closed') 
-    {
-      if (pc && pc.getStats) 
-      {
-        if (Browser.chrome || Browser.opera) 
-        {
-          pc.getStats((rawStats) =>
-          {
-            this._stats.updateStats(rawStats.result());                    
-          });
-        }
-        else if (Browser.firefox && Browser.version > 47) 
-        {
-          pc.getStats(null).then((rawStats) =>
-          {
-            this._stats.updateStatsFF(rawStats);
-          });
-        }
-      }
-    }
-
-    const stats = this._stats.getStats();
-
-    calcCallQuality.call(this, stats);
-    calcAvailableBandWidth.call(this, stats);
-
-    function calcCallQuality(report)
-    {
-      const audio_out = report.audio.send;
-      const audio_in = report.audio.recv;
-      const video_out = report.video.send;
-      const video_in = report.video.recv;
-      const hasVideoTaking = this.media.videoConstraints!== false? true:false;
-      let totalCount = 2, hasAudio = false;
-      let averagePercent = 0, quality = -1;
-      let totalPercent, screenPacketsLostRate;
-  
-      if ((!Utils.isUndefined(audio_out.packetsLostRate)) 
-          && !Utils.isUndefined(audio_in.packetsLostRate)) 
-      {
-        totalPercent = parseInt(audio_out.packetsLostRate) +
-         parseInt(audio_in.packetsLostRate);
-        hasAudio = true;
-      }
-      if (hasVideoTaking) 
-      { // may be we need to determine if the camera is abnormal
-        if ((!Utils.isUndefined(video_out.packetsLostRate))
-              && !Utils.isUndefined(video_in.packetsLostRate)) 
-        {
-          totalCount += 2;
-          totalPercent += parseInt(video_out.packetsLostRate) +
-           parseInt(video_in.packetsLostRate);        
-        }
-      }
-
-      if (totalCount == 2 && hasAudio === false) 
-      { // no data
-        return -1;
-      }
-      averagePercent = parseInt(totalPercent / totalCount);
-      if (averagePercent >= 12) 
-      {
-        quality = 0;
-      }
-      else if (averagePercent >= 5) 
-      {
-        quality = 1;
-      }
-      else if (averagePercent >= 3) 
-      {
-        quality = 2;
-      }
-      else if (averagePercent >= 2) 
-      {
-        quality = 3;
-      }
-      else 
-      {
-        quality = 4;
-      }
-  
-      report.callQuality = quality;
-
-      return quality;  
-    }
-
-    function calcAvailableBandWidth(report)
-    {
-      const audio_out = report.audio.send;
-      const audio_in = report.audio.recv;
-      const video_out = report.video.send;
-      const video_in = report.video.recv;
-  
-      if (!Utils.isUndefined(audio_out['availableBandWidth']) 
-          && !Utils.isUndefined(video_out['availableBandWidth'])) 
-      {
-        report.sendBandWidth = Math.round(audio_out['availableBandWidth'] + video_out['availableBandWidth']);
-      }
-      else if (!Utils.isUndefined(audio_out['availableBandWidth'])) 
-      {
-        report.sendBandWidth = Math.round(audio_out['availableBandWidth']);
-      }
-      else if (!Utils.isUndefined(video_out['availableBandWidth'])) 
-      {
-        report.sendBandWidth = Math.round(video_out['availableBandWidth']);
-      }
-      
-      if (!Utils.isUndefined(audio_in['availableBandWidth']) 
-          && !Utils.isUndefined(video_in['availableBandWidth'])) 
-      {
-        report.recvBandWidth = parseFloat(audio_in['availableBandWidth']) + parseFloat(video_in['availableBandWidth']);
-      }
-      else if (!Utils.isUndefined(audio_in['availableBandWidth'])) 
-      {
-        report.recvBandWidth = Math.round(audio_in['availableBandWidth']);
-      }
-      else if (!Utils.isUndefined(video_in['availableBandWidth'])) 
-      {
-        report.recvBandWidth = Math.round(video_in['availableBandWidth']);
-      }  
-    }
-
-    return stats;
+    return this._stats;
   }
 
   get localStream()
@@ -234,18 +105,7 @@ module.exports = class MediaChannel extends Channel
 
     if (!pc) return localStream;
 
-    if (pc.getLocalStreams) 
-    {
-      localStream = pc.getLocalStreams();
-
-      for (const stream of localStream) 
-      {
-        debug('Local streams: %o', stream);
-        stream.getTracks().forEach((track) => debug('Local Tracks: %o', track));
-      }
-      localStream = pc.getLocalStreams()[0];
-    }
-    else if (pc.getSenders) 
+    if (pc.getSenders) 
     {
       localStream = new global.window.MediaStream();
       pc.getSenders().forEach(function(receiver) 
@@ -258,9 +118,10 @@ module.exports = class MediaChannel extends Channel
         }
       });
     }
-    else 
+    else
+    if (pc.getLocalStreams) 
     {
-      debug('No Remote streams');
+      localStream = pc.getLocalStreams()[0];
     }
 
     return localStream;
@@ -272,18 +133,7 @@ module.exports = class MediaChannel extends Channel
 
     if (!pc) return remoteStream;
 
-    if (pc.getRemoteStreams) 
-    {
-      remoteStream = pc.getRemoteStreams();
-
-      for (const stream of remoteStream) 
-      {
-        debug('Remote streams: %o', stream);
-        stream.getTracks().forEach((track) => debug('Remote Tracks: %o', track));
-      }
-      remoteStream = pc.getRemoteStreams()[0];
-    }
-    else if (pc.getReceivers) 
+    if (pc.getReceivers) 
     {
       remoteStream = new global.window.MediaStream();
       pc.getReceivers().forEach(function(receiver) 
@@ -296,12 +146,35 @@ module.exports = class MediaChannel extends Channel
         }
       });
     }
-    else 
+    else if (pc.getRemoteStreams) 
     {
-      debug('No Remote streams');
+      remoteStream = pc.getRemoteStreams()[0];
     }
 
     return remoteStream;
+  }
+
+  getStats()
+  {
+    if (!this.session)
+    {
+      return Promise.resolve(this._stats);
+    }
+
+    const pc = this.session.connection;
+
+    if (!pc || !pc.getStats || pc.signalingState === 'closed')
+    {
+      return Promise.resolve(this._stats);
+    }
+
+    return pc.getStats()
+      .then((stats) =>
+      {        
+        this._stats.update(stats);
+
+        return Promise.resolve(this._stats);
+      });
   }
 
   setupLocalMedia() 
@@ -309,16 +182,7 @@ module.exports = class MediaChannel extends Channel
     const elements = this.media.localElements;
     const stream = this.localStream;
 
-    if (elements.video) 
-    {
-      elements.video.srcObject = null;
-      elements.video.srcObject = stream;
-    }
-    else if (elements.audio) 
-    {
-      elements.audio.srcObject = null;
-      elements.audio.srcObject = stream;
-    }
+    this.setupElementStream(elements, stream);
   }
 
   addLocalMedia(stream)
@@ -327,13 +191,14 @@ module.exports = class MediaChannel extends Channel
 
     if (!pc) return;
 
+    if (pc.addTrack)
+    {
+      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+    }
+    else
     if (pc.addStream)
     {
       pc.addStream(stream);
-    }
-    else
-    {
-      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
     }
   }
 
@@ -354,7 +219,8 @@ module.exports = class MediaChannel extends Channel
         pc.removeTrack(sender);
       });
     }
-    else 
+    else
+    if (pc.getLocalStreams)
     {
       pc.getLocalStreams().forEach(function(stream) 
       {
@@ -372,14 +238,7 @@ module.exports = class MediaChannel extends Channel
     const elements = this.media.remoteElements;
     const stream = this.remoteStream;
 
-    if (elements.video) 
-    {
-      elements.video.srcObject = stream;
-    }
-    else if (elements.audio) 
-    {
-      elements.audio.srcObject = stream;
-    }
+    this.setupElementStream(elements, stream);
   }
 
   removeRemoteMedia() 
@@ -409,6 +268,34 @@ module.exports = class MediaChannel extends Channel
         });
         pc.removeStream(stream);
       });
+    }
+  }
+
+  setupElementStream(elements, stream)
+  {
+    if (elements.video) 
+    {
+      try 
+      {
+        elements.video.srcObject = stream;
+      }
+      catch (error) 
+      {
+        warn('%o', error);
+        elements.video.srcObject = stream;
+      }
+    }
+    else if (elements.audio) 
+    {
+      try 
+      {
+        elements.audio.srcObject = stream;
+      }
+      catch (error) 
+      {
+        warn('%o', error);
+        elements.audio.srcObject = stream; 
+      }
     }
   }
 
@@ -452,11 +339,13 @@ module.exports = class MediaChannel extends Channel
       this.setupRemoteMedia();
     };
 
+    /*
     data.peerconnection.onaddstream = () =>
     {
       debug('peerconnection:onaddstream');
       this.setupRemoteMedia();
     };
+    */
 
     data.peerconnection.onremovestream = () =>
     {
@@ -509,6 +398,31 @@ module.exports = class MediaChannel extends Channel
     this.setupLocalMedia();
 
     super._accepted(data);
+  }
+
+  _ended(data)
+  {
+    this._clear();
+    super._ended(data);
+  }
+
+  _failed(data)
+  {
+    this._clear();
+    super._failed(data);
+  }
+
+  _clear()
+  {
+    let elements = this.media.localElements;
+
+    this.setupElementStream(elements, null);
+
+    elements = this.media.remoteElements;
+
+    this.setupElementStream(elements, null);
+
+    this._stats.clear();
   }
 
   _sdp(data)

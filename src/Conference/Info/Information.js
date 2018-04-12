@@ -177,7 +177,7 @@ module.exports = class Information extends EventEmitter
   }
   _particalUpdate(info)
   {
-    const participantCount = this.users.participantCount || 0;
+    const participantCount = this.users.participantCount;
 
     this._version++;
     this._time = info['now-time'];

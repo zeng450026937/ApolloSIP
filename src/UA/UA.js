@@ -155,6 +155,9 @@ module.exports = class UA extends SIP.UA
 
       case 'phonebookUrl':
         return this._configuration.phonebookUrl;
+      
+      case 'autopUrl':
+        return this._configuration.autopUrl;
 
       case 'anonymous':
         return this._configuration.anonymous;
@@ -213,6 +216,10 @@ module.exports = class UA extends SIP.UA
 
       case 'phonebookUrl':
         this._configuration.phonebookUrl = value;
+        break;
+      
+      case 'autopUrl':
+        this._configuration.autopUrl = value;
         break;
 
       case 'anonymous':
