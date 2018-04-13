@@ -1,19 +1,20 @@
 const webpack = require('webpack');
-
-const path = require('path');
 const pkg = require('./package.json');
 const year = new Date().getFullYear();
 const banner = `Apollo version ${pkg.version}\n
 Copyright (c) 2018-${year} Yealink Networks, Inc\n`;
 
-const baseConfig = {
+module.exports = {
+  entry : {
+    'apollosip' : `${__dirname}/src/ApolloSIP.js`
+  },
   output : {
-    path          : `${__dirname }/dist`,
+    path          : `${__dirname}/dist`,
     filename      : '[name].js',
     library       : 'ApolloSIP',
     libraryTarget : 'umd'
   },
-  mode   : 'development',
+  mode   : 'production',
   module : {
     rules : [
       {
@@ -39,18 +40,3 @@ const baseConfig = {
     })
   ]
 };
-const webConfig = Object.assign({}, baseConfig, { 
-  target : 'web',
-  entry  : {
-    'apollosip-web' : `${__dirname }/src/ApolloSIP.js`
-  }
-});
-
-const electronConfig = Object.assign({}, baseConfig, { 
-  target : 'electron-renderer',
-  entry  : {
-    'apollosip' : `${__dirname }/src/ApolloSIP.js`
-  }
-});
-
-module.exports = [ electronConfig, webConfig ];

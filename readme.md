@@ -87,8 +87,8 @@ const info = {
   '@entity'                : '',
   'conference-description' : {
     'organizer' : {
-      'username' : this.from._user,
-      'realm'    : this.from._host
+      'username' : 'organizer',
+      'realm'    : 'meeting.yealinkvc.com'
     },
     'subject' : 'Conference',
     'profile' : 'default' // default | demonstrator
