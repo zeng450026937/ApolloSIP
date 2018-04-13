@@ -540,56 +540,63 @@ module.exports = class RTCStats
 
       if (prestats)
       {
-        const time_diff = diff(stats, prestats, 'timestamp');
-        let value_diff;
-
-        // calc outgoingBitrate
-        if (direction==='outbound' && !stats.outgoingBitrate)
+        if (prestats && prestats.trackId?Boolean(stats.trackId):true)
         {
-          value_diff = diff(stats, prestats, 'bytesSent');
-      
-          stats.outgoingBitrate = safe(value_diff * 8 / time_diff);
-        }
-        // calc incomingBitrate
-        if (direction==='inbound' && !stats.incomingBitrate)
-        {
-          value_diff = diff(stats, prestats, 'bytesReceived');
-      
-          stats.incomingBitrate = safe(value_diff * 8 / time_diff);
-        }
+          const time_diff = diff(stats, prestats, 'timestamp');
+          let value_diff;
 
-        // calc transport outgoingBitrate
-        if (stats.transport && prestats.transport && !stats.transport.outgoingBitrate)
-        {
-          value_diff = diff(stats.transport, prestats.transport, 'bytesSent');
-
-          stats.transport.outgoingBitrate = safe(value_diff * 8 / time_diff);
-        }
-        // calc transport incomingBitrate
-        if (stats.transport && prestats.transport && !stats.transport.incomingBitrate)
-        {
-          value_diff = diff(stats.transport, prestats.transport, 'bytesReceived');
-
-          stats.transport.incomingBitrate = safe(value_diff * 8 / time_diff);
-        }
-
-        // calc frameRate
-        if (stats.mediaType === 'video' && stats.track && prestats.track && !stats.track.frameRate)
-        {
-          if (direction === 'inbound')
+          // calc outgoingBitrate
+          if (direction==='outbound' && !stats.outgoingBitrate)
           {
-            value_diff = diff(stats.track, prestats.track, 'framesReceived');
+            value_diff = diff(stats, prestats, 'bytesSent');
+      
+            stats.outgoingBitrate = safe(value_diff * 8 / time_diff);
           }
-          if (direction === 'outbound')
+          // calc incomingBitrate
+          if (direction==='inbound' && !stats.incomingBitrate)
           {
-            value_diff = diff(stats.track, prestats.track, 'framesSent');
+            value_diff = diff(stats, prestats, 'bytesReceived');
+      
+            stats.incomingBitrate = safe(value_diff * 8 / time_diff);
           }
 
-          stats.track.frameRate = safe(value_diff / time_diff * 1000);
+          // calc transport outgoingBitrate
+          if (stats.transport && prestats.transport && !stats.transport.outgoingBitrate)
+          {
+            value_diff = diff(stats.transport, prestats.transport, 'bytesSent');
+
+            stats.transport.outgoingBitrate = safe(value_diff * 8 / time_diff);
+          }
+          // calc transport incomingBitrate
+          if (stats.transport && prestats.transport && !stats.transport.incomingBitrate)
+          {
+            value_diff = diff(stats.transport, prestats.transport, 'bytesReceived');
+
+            stats.transport.incomingBitrate = safe(value_diff * 8 / time_diff);
+          }
+
+          // calc frameRate
+          if (stats.mediaType === 'video' && stats.track && prestats.track && !stats.track.frameRate)
+          {
+            if (direction === 'inbound')
+            {
+              value_diff = diff(stats.track, prestats.track, 'framesReceived');
+            }
+            if (direction === 'outbound')
+            {
+              value_diff = diff(stats.track, prestats.track, 'framesSent');
+            }
+
+            stats.track.frameRate = safe(value_diff / time_diff * 1000);
+          }
+
+          this[direction][stats.mediaType] = stats;
         }
       }
-        
-      this[direction][stats.mediaType] = stats;
+      else
+      {
+        this[direction][stats.mediaType] = stats;
+      }
     }
 
   }

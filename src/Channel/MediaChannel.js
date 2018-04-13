@@ -127,23 +127,24 @@ module.exports = class MediaChannel extends Channel
 
     if (!pc) return localStream;
 
+
+    if (pc.getLocalStreams) 
+    {
+      localStream = pc.getLocalStreams()[0];
+    }
+    else
     if (pc.getSenders) 
     {
       localStream = new global.window.MediaStream();
-      pc.getSenders().forEach(function(receiver) 
+      pc.getSenders().forEach(function(sender) 
       {
-        const track = receiver.track;
+        const track = sender.track;
 
         if (track) 
         {
           localStream.addTrack(track);
         }
       });
-    }
-    else
-    if (pc.getLocalStreams) 
-    {
-      localStream = pc.getLocalStreams()[0];
     }
 
     return localStream;
@@ -155,7 +156,11 @@ module.exports = class MediaChannel extends Channel
 
     if (!pc) return remoteStream;
 
-    if (pc.getReceivers) 
+    if (pc.getRemoteStreams) 
+    {
+      remoteStream = pc.getRemoteStreams()[0];
+    }
+    else if (pc.getReceivers) 
     {
       remoteStream = new global.window.MediaStream();
       pc.getReceivers().forEach(function(receiver) 
@@ -167,10 +172,6 @@ module.exports = class MediaChannel extends Channel
           remoteStream.addTrack(track);
         }
       });
-    }
-    else if (pc.getRemoteStreams) 
-    {
-      remoteStream = pc.getRemoteStreams()[0];
     }
 
     return remoteStream;
@@ -213,14 +214,14 @@ module.exports = class MediaChannel extends Channel
 
     if (!pc) return;
 
-    if (pc.addTrack)
-    {
-      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-    }
-    else
     if (pc.addStream)
     {
       pc.addStream(stream);
+    }
+    else
+    if (pc.addTrack)
+    {
+      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
     }
   }
 
@@ -230,18 +231,6 @@ module.exports = class MediaChannel extends Channel
 
     if (!pc) return;
 
-    if (pc.getSenders) 
-    {
-      pc.getSenders().forEach(function(sender) 
-      {
-        if (sender.track) 
-        {
-          sender.track.stop();
-        }
-        pc.removeTrack(sender);
-      });
-    }
-    else
     if (pc.getLocalStreams)
     {
       pc.getLocalStreams().forEach(function(stream) 
@@ -251,6 +240,18 @@ module.exports = class MediaChannel extends Channel
           track.stop();
         });
         pc.removeStream(stream);
+      });
+    }
+    else
+    if (pc.getSenders) 
+    {
+      pc.getSenders().forEach(function(sender) 
+      {
+        if (sender.track) 
+        {
+          sender.track.stop();
+        }
+        pc.removeTrack(sender);
       });
     }
 
@@ -359,21 +360,22 @@ module.exports = class MediaChannel extends Channel
       debug('peerconnection:onicegatheringstatechange: %s', data.peerconnection.iceGatheringState);
     };
 
+    /*
     data.peerconnection.ontrack = () =>
     {
       debug('peerconnection:ontrack');
       this.remoteStream = this.getRemoteStream();
       this.setupRemoteMedia();
     };
+    */
 
-    /*
     data.peerconnection.onaddstream = () =>
     {
       debug('peerconnection:onaddstream');
+      this.remoteStream = this.getRemoteStream();
       this.setupRemoteMedia();
     };
-    */
-
+    
     data.peerconnection.onremovestream = () =>
     {
       debug('peerconnection:onremovestream');

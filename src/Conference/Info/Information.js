@@ -99,7 +99,9 @@ module.exports = class Information extends EventEmitter
       this._entity = info['@entity'];
     }
 
-    if (this.version < info['@version'])
+    if (!info['@version'] ||
+        (info['@version']&&this.version < info['@version'])
+    )
     {      
       switch (info['@state']) 
       {
@@ -129,6 +131,10 @@ module.exports = class Information extends EventEmitter
           this._particalUpdate(info);
           break;
       }
+    }
+    else
+    {
+      debug('illegal version');
     }
   }
 
