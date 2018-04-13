@@ -25,6 +25,7 @@ module.exports = class Channel extends EventEmitter
       'accepted'                                  : this._accepted.bind(this),
       'confirmed'                                 : this._confirmed.bind(this),
       'ended'                                     : this._ended.bind(this),
+      'finished'                                  : this._finished.bind(this),
       'failed'                                    : this._failed.bind(this),
       'newDTMF'                                   : this._newDTMF.bind(this),
       'newInfo'                                   : this._newInfo.bind(this),
@@ -204,6 +205,14 @@ module.exports = class Channel extends EventEmitter
     this.session = null;
 
     this.emit('ended', new Error.FreeSwitchError(data));
+  }
+  _finished(data)
+  {
+    debug('on finished: %s, cause: %s', data.originator, data.cause);
+
+    this.session = null;
+
+    this.emit('finished', new Error.FreeSwitchError(data));
   }
   _failed(data) 
   {
