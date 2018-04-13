@@ -34,6 +34,7 @@
     "sdp-transform": "file:./sdp-transform",
     "socket.io-client": "^2.1.0",
     "webrtc-adapter": "^6.1.5",
+    "ws": "^5.1.1",
     "xmlbuilder": "^9.0.7"
   },
   "devDependencies": {
