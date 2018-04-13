@@ -489,7 +489,7 @@ module.exports = class MediaChannel extends Channel
             },
             {
               type  : 'TIAS',
-              limit : 3072 
+              limit : 3072 * 1000 
             }
           ];
 
@@ -565,7 +565,7 @@ module.exports = class MediaChannel extends Channel
             },
             {
               type  : 'TIAS',
-              limit : 128 
+              limit : 128 * 1000
             }
           ];
         }
